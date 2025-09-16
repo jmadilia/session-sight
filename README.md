@@ -1,1 +1,1 @@
-# session-sight
+# Session Sight
