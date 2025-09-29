@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -75,8 +75,7 @@ export function LoginForm({
                   <Label htmlFor="password">Password</Label>
                   <Link
                     href="/auth/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
+                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
                     Forgot your password?
                   </Link>
                 </div>
@@ -97,8 +96,7 @@ export function LoginForm({
               Don&apos;t have an account?{" "}
               <Link
                 href="/auth/sign-up"
-                className="underline underline-offset-4"
-              >
+                className="underline underline-offset-4">
                 Sign up
               </Link>
             </div>
@@ -108,3 +106,4 @@ export function LoginForm({
     </div>
   );
 }
+

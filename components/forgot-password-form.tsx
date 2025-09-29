@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -91,8 +91,7 @@ export function ForgotPasswordForm({
                 Already have an account?{" "}
                 <Link
                   href="/auth/login"
-                  className="underline underline-offset-4"
-                >
+                  className="underline underline-offset-4">
                   Login
                 </Link>
               </div>
@@ -103,3 +102,4 @@ export function ForgotPasswordForm({
     </div>
   );
 }
+
