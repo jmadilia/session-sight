@@ -84,23 +84,6 @@ The application uses 5 main tables:
 - **`entry_tags`** - Many-to-many relationship between entries and tags
 - **`insights`** - AI-generated insights for entries
 
-## Project Structure
-
-\`\`\`
-sessionsight/
-├── app/ # Next.js app directory
-│ ├── protected/ # Protected routes requiring auth
-│ ├── globals.css # Global styles
-│ └── layout.tsx # Root layout
-├── components/ # Reusable UI components
-│ └── ui/ # shadcn/ui components
-├── lib/ # Utility functions and configurations
-│ ├── supabase/ # Supabase client setup
-│ └── utils.ts # Helper functions
-├── scripts/ # Database setup scripts
-└── hooks/ # Custom React hooks
-\`\`\`
-
 ## Development
 
 ### Available Scripts
