@@ -3,122 +3,34 @@
 -- Run this after running 03-seed-sample-entries.sql
 -- NOTE: This will use the first profile found in the profiles table
 
--- Added ORDER BY to ensure consistent selection of the first profile
--- Entry 1: "A Great Start to the Week"
+-- Rewritten to use entry ordering instead of title matching for more reliable inserts
 WITH user_data AS (
   SELECT id FROM profiles ORDER BY created_at ASC LIMIT 1
+),
+ordered_entries AS (
+  SELECT 
+    id,
+    created_at,
+    ROW_NUMBER() OVER (ORDER BY created_at ASC) as entry_num
+  FROM entries
+  WHERE user_id = (SELECT id FROM user_data)
 )
 INSERT INTO insights (user_id, entry_id, sentiment_score, key_themes, generated_at)
 SELECT 
-  user_data.id,
-  e.id,
-  0.92,
-  ARRAY['productivity', 'gratitude', 'team collaboration', 'positive momentum'],
-  e.created_at + INTERVAL '5 minutes'
-FROM entries e
-CROSS JOIN user_data
-WHERE e.user_id = user_data.id
-  AND e.title = 'A Great Start to the Week'
-  AND user_data.id IS NOT NULL;
-
--- Entry 2: "Feeling a Bit Overwhelmed"
-WITH user_data AS (
-  SELECT id FROM profiles ORDER BY created_at ASC LIMIT 1
-)
-INSERT INTO insights (user_id, entry_id, sentiment_score, key_themes, generated_at)
-SELECT 
-  user_data.id,
-  e.id,
-  0.35,
-  ARRAY['stress', 'work pressure', 'anxiety', 'need for balance', 'self-care'],
-  e.created_at + INTERVAL '5 minutes'
-FROM entries e
-CROSS JOIN user_data
-WHERE e.user_id = user_data.id
-  AND e.title = 'Feeling a Bit Overwhelmed'
-  AND user_data.id IS NOT NULL;
-
--- Entry 3: "Grateful for Small Moments"
-WITH user_data AS (
-  SELECT id FROM profiles ORDER BY created_at ASC LIMIT 1
-)
-INSERT INTO insights (user_id, entry_id, sentiment_score, key_themes, generated_at)
-SELECT 
-  user_data.id,
-  e.id,
-  0.85,
-  ARRAY['mindfulness', 'gratitude', 'nature', 'mental health awareness', 'presence'],
-  e.created_at + INTERVAL '5 minutes'
-FROM entries e
-CROSS JOIN user_data
-WHERE e.user_id = user_data.id
-  AND e.title = 'Grateful for Small Moments'
-  AND user_data.id IS NOT NULL;
-
--- Entry 4: "Challenging Day at Work"
-WITH user_data AS (
-  SELECT id FROM profiles ORDER BY created_at ASC LIMIT 1
-)
-INSERT INTO insights (user_id, entry_id, sentiment_score, key_themes, generated_at)
-SELECT 
-  user_data.id,
-  e.id,
-  0.48,
-  ARRAY['conflict resolution', 'personal growth', 'emotional exhaustion', 'communication'],
-  e.created_at + INTERVAL '5 minutes'
-FROM entries e
-CROSS JOIN user_data
-WHERE e.user_id = user_data.id
-  AND e.title = 'Challenging Day at Work'
-  AND user_data.id IS NOT NULL;
-
--- Entry 5: "Excited About New Opportunities"
-WITH user_data AS (
-  SELECT id FROM profiles ORDER BY created_at ASC LIMIT 1
-)
-INSERT INTO insights (user_id, entry_id, sentiment_score, key_themes, generated_at)
-SELECT 
-  user_data.id,
-  e.id,
-  0.95,
-  ARRAY['achievement', 'motivation', 'success', 'positive outlook', 'hard work paying off'],
-  e.created_at + INTERVAL '5 minutes'
-FROM entries e
-CROSS JOIN user_data
-WHERE e.user_id = user_data.id
-  AND e.title = 'Excited About New Opportunities'
-  AND user_data.id IS NOT NULL;
-
--- Entry 6: "Taking Time to Rest"
-WITH user_data AS (
-  SELECT id FROM profiles ORDER BY created_at ASC LIMIT 1
-)
-INSERT INTO insights (user_id, entry_id, sentiment_score, key_themes, generated_at)
-SELECT 
-  user_data.id,
-  e.id,
-  0.78,
-  ARRAY['self-care', 'rest', 'relaxation', 'recharging', 'peace'],
-  e.created_at + INTERVAL '5 minutes'
-FROM entries e
-CROSS JOIN user_data
-WHERE e.user_id = user_data.id
-  AND e.title = 'Taking Time to Rest'
-  AND user_data.id IS NOT NULL;
-
--- Entry 7: "Reflecting on Personal Growth"
-WITH user_data AS (
-  SELECT id FROM profiles ORDER BY created_at ASC LIMIT 1
-)
-INSERT INTO insights (user_id, entry_id, sentiment_score, key_themes, generated_at)
-SELECT 
-  user_data.id,
-  e.id,
-  0.88,
-  ARRAY['personal growth', 'resilience', 'self-compassion', 'progress tracking', 'emotional awareness'],
-  e.created_at + INTERVAL '5 minutes'
-FROM entries e
-CROSS JOIN user_data
-WHERE e.user_id = user_data.id
-  AND e.title = 'Reflecting on Personal Growth'
-  AND user_data.id IS NOT NULL;
+  (SELECT id FROM user_data),
+  id,
+  sentiment_score,
+  key_themes,
+  created_at + INTERVAL '5 minutes'
+FROM ordered_entries
+CROSS JOIN (
+  VALUES
+    (1, 0.92, ARRAY['productivity', 'gratitude', 'team collaboration', 'positive momentum']),
+    (2, 0.35, ARRAY['stress', 'work pressure', 'anxiety', 'need for balance', 'self-care']),
+    (3, 0.85, ARRAY['mindfulness', 'gratitude', 'nature', 'mental health awareness', 'presence']),
+    (4, 0.48, ARRAY['conflict resolution', 'personal growth', 'emotional exhaustion', 'communication']),
+    (5, 0.95, ARRAY['achievement', 'motivation', 'success', 'positive outlook', 'hard work paying off']),
+    (6, 0.78, ARRAY['self-care', 'rest', 'relaxation', 'recharging', 'peace']),
+    (7, 0.88, ARRAY['personal growth', 'resilience', 'self-compassion', 'progress tracking', 'emotional awareness'])
+) AS insight_data(entry_num, sentiment_score, key_themes)
+WHERE ordered_entries.entry_num = insight_data.entry_num;
