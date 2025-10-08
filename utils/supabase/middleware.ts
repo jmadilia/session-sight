@@ -37,11 +37,11 @@ export const updateSession = async (request: NextRequest) => {
 
     // protected routes
     if (request.nextUrl.pathname.startsWith("/profile") && user.error) {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
+      return NextResponse.redirect(new URL("/auth/login", request.url));
     }
 
     if (request.nextUrl.pathname === "/" && !user.error) {
-      return NextResponse.redirect(new URL("/profile", request.url));
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
     return response;

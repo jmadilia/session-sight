@@ -117,6 +117,219 @@ export interface Database {
           key_themes?: string[] | null;
         };
       };
+      therapists: {
+        Row: {
+          id: string;
+          license_number: string | null;
+          specialization: string[] | null;
+          practice_name: string | null;
+          phone: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          license_number?: string | null;
+          specialization?: string[] | null;
+          practice_name?: string | null;
+          phone?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          license_number?: string | null;
+          specialization?: string[] | null;
+          practice_name?: string | null;
+          phone?: string | null;
+          updated_at?: string;
+        };
+      };
+      clients: {
+        Row: {
+          id: string;
+          therapist_id: string;
+          first_name: string;
+          last_name: string;
+          email: string | null;
+          phone: string | null;
+          date_of_birth: string | null;
+          initial_session_date: string | null;
+          status: "active" | "inactive" | "discharged";
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          therapist_id: string;
+          first_name: string;
+          last_name: string;
+          email?: string | null;
+          phone?: string | null;
+          date_of_birth?: string | null;
+          initial_session_date?: string | null;
+          status?: "active" | "inactive" | "discharged";
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          therapist_id?: string;
+          first_name?: string;
+          last_name?: string;
+          email?: string | null;
+          phone?: string | null;
+          date_of_birth?: string | null;
+          initial_session_date?: string | null;
+          status?: "active" | "inactive" | "discharged";
+          notes?: string | null;
+          updated_at?: string;
+        };
+      };
+      sessions: {
+        Row: {
+          id: string;
+          therapist_id: string;
+          client_id: string;
+          session_date: string;
+          duration_minutes: number;
+          session_type: "individual" | "couples" | "family" | "group";
+          status: "scheduled" | "completed" | "cancelled" | "no-show";
+          mood_rating: number | null;
+          progress_rating: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          therapist_id: string;
+          client_id: string;
+          session_date: string;
+          duration_minutes?: number;
+          session_type?: "individual" | "couples" | "family" | "group";
+          status?: "scheduled" | "completed" | "cancelled" | "no-show";
+          mood_rating?: number | null;
+          progress_rating?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          therapist_id?: string;
+          client_id?: string;
+          session_date?: string;
+          duration_minutes?: number;
+          session_type?: "individual" | "couples" | "family" | "group";
+          status?: "scheduled" | "completed" | "cancelled" | "no-show";
+          mood_rating?: number | null;
+          progress_rating?: number | null;
+          updated_at?: string;
+        };
+      };
+      session_notes: {
+        Row: {
+          id: string;
+          session_id: string;
+          content: string;
+          interventions: string[] | null;
+          goals_addressed: string[] | null;
+          homework_assigned: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          content: string;
+          interventions?: string[] | null;
+          goals_addressed?: string[] | null;
+          homework_assigned?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          content?: string;
+          interventions?: string[] | null;
+          goals_addressed?: string[] | null;
+          homework_assigned?: string | null;
+          updated_at?: string;
+        };
+      };
+      appointments: {
+        Row: {
+          id: string;
+          therapist_id: string;
+          client_id: string;
+          appointment_date: string;
+          duration_minutes: number;
+          status: "scheduled" | "confirmed" | "cancelled" | "completed";
+          cancellation_reason: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          therapist_id: string;
+          client_id: string;
+          appointment_date: string;
+          duration_minutes?: number;
+          status?: "scheduled" | "confirmed" | "cancelled" | "completed";
+          cancellation_reason?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          therapist_id?: string;
+          client_id?: string;
+          appointment_date?: string;
+          duration_minutes?: number;
+          status?: "scheduled" | "confirmed" | "cancelled" | "completed";
+          cancellation_reason?: string | null;
+          notes?: string | null;
+          updated_at?: string;
+        };
+      };
+      client_metrics: {
+        Row: {
+          id: string;
+          client_id: string;
+          metric_date: string;
+          attendance_rate: number | null;
+          cancellation_count: number;
+          no_show_count: number;
+          engagement_score: number | null;
+          risk_level: "low" | "medium" | "high" | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          metric_date: string;
+          attendance_rate?: number | null;
+          cancellation_count?: number;
+          no_show_count?: number;
+          engagement_score?: number | null;
+          risk_level?: "low" | "medium" | "high" | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          client_id?: string;
+          metric_date?: string;
+          attendance_rate?: number | null;
+          cancellation_count?: number;
+          no_show_count?: number;
+          engagement_score?: number | null;
+          risk_level?: "low" | "medium" | "high" | null;
+        };
+      };
     };
   };
 }
