@@ -20,7 +20,7 @@ const badgeVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  },
+  }
 );
 
 export interface BadgeProps
@@ -34,3 +34,4 @@ function Badge({ className, variant, ...props }: BadgeProps) {
 }
 
 export { Badge, badgeVariants };
+
