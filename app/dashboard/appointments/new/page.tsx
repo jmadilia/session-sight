@@ -2,11 +2,8 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { NewAppointmentForm } from "@/components/new-appointment-form";
 
-export default async function NewAppointmentPage({
-  searchParams,
-}: {
-  searchParams: { client?: string };
-}) {
+export default async function NewAppointmentPage(props: any) {
+  const { searchParams } = props as { searchParams: { client?: string } };
   const supabase = await createClient();
 
   const {

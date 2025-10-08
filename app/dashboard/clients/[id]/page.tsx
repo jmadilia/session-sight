@@ -6,11 +6,8 @@ import { ArrowLeft, Calendar, FileText, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 
-export default async function ClientDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function ClientDetailPage(props: any) {
+  const { params } = props as { params: { id: string } };
   const supabase = await createClient();
 
   const {

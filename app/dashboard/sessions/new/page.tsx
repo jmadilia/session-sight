@@ -2,11 +2,8 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { NewSessionForm } from "@/components/new-session-form";
 
-export default async function NewSessionPage({
-  searchParams,
-}: {
-  searchParams: { client?: string };
-}) {
+export default async function NewSessionPage(props: any) {
+  const { searchParams } = props as { searchParams: { client?: string } };
   const supabase = await createClient();
 
   const {
