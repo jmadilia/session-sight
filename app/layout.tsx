@@ -1,16 +1,19 @@
+import type React from "react";
 import type { Metadata } from "next";
-import { Inter, Inter_Tight } from "next/font/google";
+
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import "./globals.css";
 
+import { Inter, Roboto_Mono } from "next/font/google";
+
 const inter = Inter({
-  variable: "--font-geist-sans",
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
-const inter_tight = Inter_Tight({
-  variable: "--font-geist-mono",
+const robotoMono = Roboto_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
@@ -27,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`font-sans ${inter.variable} ${inter_tight.variable}`}>
+      <body className={`font-sans ${inter.variable} ${robotoMono.variable}`}>
         <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
         <Analytics />
       </body>
