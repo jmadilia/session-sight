@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,46 +8,35 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { createClient } from "@/utils/supabase/client";
-import type { User } from "@supabase/supabase-js";
-import { LogOut, Menu, UserIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import {
-  Home,
-  Users,
-  Calendar,
-  TrendingUp,
-  CalendarCheck,
-  Settings,
-} from "lucide-react";
+} from "@/components/ui/dropdown-menu"
+import { createClient } from "@/utils/supabase/client"
+import type { User } from "@supabase/supabase-js"
+import { LogOut, Menu, UserIcon } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
+import { Home, Users, Calendar, TrendingUp, CalendarCheck, Settings } from "lucide-react"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Clients", href: "/dashboard/clients", icon: Users },
   { name: "Sessions", href: "/dashboard/sessions", icon: Calendar },
-  {
-    name: "Appointments",
-    href: "/dashboard/appointments",
-    icon: CalendarCheck,
-  },
+  { name: "Appointments", href: "/dashboard/appointments", icon: CalendarCheck },
   { name: "Analytics", href: "/dashboard/analytics", icon: TrendingUp },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
-];
+]
 
 export function DashboardHeader({ user }: { user: User }) {
-  const router = useRouter();
-  const pathname = usePathname();
+  const router = useRouter()
+  const pathname = usePathname()
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/");
-  };
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push("/")
+  }
 
   return (
     <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
@@ -61,13 +50,13 @@ export function DashboardHeader({ user }: { user: User }) {
           <SheetContent side="left" className="w-64 p-0">
             <div className="flex h-16 items-center px-6 border-b border-border">
               <Link href="/dashboard" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-blue-600" />
                 <span className="font-semibold text-lg">SessionSight</span>
               </Link>
             </div>
             <nav className="px-4 py-6 space-y-1">
               {navigation.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href
                 return (
                   <Link
                     key={item.name}
@@ -75,13 +64,14 @@ export function DashboardHeader({ user }: { user: User }) {
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    )}>
+                        ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white shadow-md"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    )}
+                  >
                     <item.icon className="w-5 h-5" />
                     {item.name}
                   </Link>
-                );
+                )
               })}
             </nav>
           </SheetContent>
@@ -117,5 +107,5 @@ export function DashboardHeader({ user }: { user: User }) {
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
-  );
+  )
 }

@@ -1,5 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
+import { ThemeProvider } from "next-themes";
 
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
@@ -29,11 +30,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`font-sans ${inter.variable} ${robotoMono.variable}`}>
-        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-        <Analytics />
-      </body>
+    <html lang="en" className="dark" suppressHydrationWarning>
+        <body className={`font-sans ${inter.variable} ${robotoMono.variable}`}>
+          <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange>
+            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+            </ThemeProvider>
+          <Analytics />
+        </body>
     </html>
   );
 }
