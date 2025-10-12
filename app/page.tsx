@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Users, TrendingUp, AlertCircle, BarChart3, Sparkles, Shield, Zap } from "lucide-react"
 import Link from "next/link"
+import { ThemeSwitcher } from "@/components/theme-switcher"
 
 export default function Home() {
   return (
@@ -177,8 +178,11 @@ export default function Home() {
                 SessionSight
               </span>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-muted-foreground">
               © 2025 SessionSight. Built for mental health professionals.
+              </div>
+              <ThemeSwitcher />
             </div>
           </div>
         </div>
