@@ -39,14 +39,16 @@ export default async function AppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            Appointments
+          </h1>
           <p className="text-muted-foreground mt-2">
             Schedule and manage upcoming sessions
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/dashboard/appointments/new">
             <Plus className="w-4 h-4 mr-2" />
             Schedule Appointment
@@ -65,15 +67,15 @@ export default async function AppointmentsPage() {
                 {upcoming.map((appt) => (
                   <div
                     key={appt.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <CalendarIcon className="w-5 h-5 text-muted-foreground" />
-                        <div>
-                          <h3 className="font-semibold">
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg hover:bg-accent transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-3">
+                        <CalendarIcon className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold truncate">
                             {appt.clients?.first_name} {appt.clients?.last_name}
                           </h3>
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
                             <p className="text-sm text-muted-foreground">
                               {new Date(
                                 appt.appointment_date
@@ -93,23 +95,28 @@ export default async function AppointmentsPage() {
                                   : appt.status === "cancelled"
                                   ? "destructive"
                                   : "secondary"
-                              }>
+                              }
+                              className="w-fit">
                               {appt.status}
                             </Badge>
                           </div>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">
+                      <p className="text-sm text-muted-foreground mt-2 ml-8">
                         {appt.duration_minutes} minutes
                       </p>
                       {appt.notes && (
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-sm text-muted-foreground mt-1 ml-8 line-clamp-2">
                           {appt.notes}
                         </p>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button asChild variant="outline" size="sm">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto bg-transparent">
                         <Link href={`/dashboard/appointments/${appt.id}`}>
                           View
                         </Link>
@@ -148,16 +155,18 @@ export default async function AppointmentsPage() {
                 {past.slice(0, 10).map((appt) => (
                   <div
                     key={appt.id}
-                    className="flex items-center justify-between p-4 border rounded-lg opacity-60">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 border rounded-lg opacity-60">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold truncate">
                         {appt.clients?.first_name} {appt.clients?.last_name}
                       </h3>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
                         <p className="text-sm text-muted-foreground">
                           {new Date(appt.appointment_date).toLocaleDateString()}
                         </p>
-                        <Badge variant="outline">{appt.status}</Badge>
+                        <Badge variant="outline" className="w-fit">
+                          {appt.status}
+                        </Badge>
                       </div>
                     </div>
                   </div>

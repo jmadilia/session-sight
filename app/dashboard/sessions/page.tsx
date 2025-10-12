@@ -34,14 +34,16 @@ export default async function SessionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Sessions</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            Sessions
+          </h1>
           <p className="text-muted-foreground mt-2">
             View and manage therapy session records
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/dashboard/sessions/new">
             <Plus className="w-4 h-4 mr-2" />
             Record Session
@@ -64,15 +66,15 @@ export default async function SessionsPage() {
               {sessions.map((session) => (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
-                  <div className="flex-1">
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg hover:bg-accent transition-colors">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3">
-                      <div>
-                        <h3 className="font-semibold">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold truncate">
                           {session.clients?.first_name}{" "}
                           {session.clients?.last_name}
                         </h3>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
                           <p className="text-sm text-muted-foreground">
                             {new Date(
                               session.session_date
@@ -95,32 +97,37 @@ export default async function SessionsPage() {
                                 : session.status === "no-show"
                                 ? "destructive"
                                 : "secondary"
-                            }>
+                            }
+                            className="w-fit">
                             {session.status}
                           </Badge>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-sm text-muted-foreground">
                       <span>{session.duration_minutes} min</span>
-                      <span>•</span>
+                      <span className="hidden sm:inline">•</span>
                       <span className="capitalize">{session.session_type}</span>
                       {session.mood_rating && (
                         <>
-                          <span>•</span>
+                          <span className="hidden sm:inline">•</span>
                           <span>Mood: {session.mood_rating}/10</span>
                         </>
                       )}
                       {session.progress_rating && (
                         <>
-                          <span>•</span>
+                          <span className="hidden sm:inline">•</span>
                           <span>Progress: {session.progress_rating}/10</span>
                         </>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button asChild variant="outline" size="sm">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto bg-transparent">
                       <Link href={`/dashboard/sessions/${session.id}`}>
                         View Details
                       </Link>

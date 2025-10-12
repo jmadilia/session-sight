@@ -27,14 +27,16 @@ export default async function ClientsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            Clients
+          </h1>
           <p className="text-muted-foreground mt-2">
             Manage your client roster and track engagement
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/dashboard/clients/new">
             <Plus className="w-4 h-4 mr-2" />
             Add Client
@@ -57,15 +59,15 @@ export default async function ClientsPage() {
               {clients.map((client) => (
                 <div
                   key={client.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
-                  <div className="flex-1">
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg hover:bg-accent transition-colors">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3">
-                      <div>
-                        <h3 className="font-semibold">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold truncate">
                           {client.first_name} {client.last_name}
                         </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-sm text-muted-foreground">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
+                          <p className="text-sm text-muted-foreground truncate">
                             {client.email || "No email"}
                           </p>
                           <Badge
@@ -75,20 +77,25 @@ export default async function ClientsPage() {
                                 : client.status === "inactive"
                                 ? "secondary"
                                 : "outline"
-                            }>
+                            }
+                            className="w-fit">
                             {client.status}
                           </Badge>
                         </div>
                       </div>
                     </div>
                     {client.notes && (
-                      <p className="text-sm text-muted-foreground mt-2 line-clamp-1">
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
                         {client.notes}
                       </p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button asChild variant="outline" size="sm">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto bg-transparent">
                       <Link href={`/dashboard/clients/${client.id}`}>
                         View Details
                       </Link>
