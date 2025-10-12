@@ -1,10 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, { params }: any) {
   const supabase = await createClient();
 
   // Check authentication
@@ -46,10 +43,7 @@ export async function GET(
   return NextResponse.json({ client });
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: Request, { params }: any) {
   const supabase = await createClient();
 
   // Check authentication
