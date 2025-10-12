@@ -18,6 +18,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Home, Users, Calendar, TrendingUp, CalendarCheck, Settings } from "lucide-react"
+import { ThemeSwitcher } from "@/components/theme-switcher"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -79,13 +80,16 @@ export function DashboardHeader({ user }: { user: User }) {
         <h1 className="text-lg font-semibold lg:hidden">SessionSight</h1>
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <UserIcon className="w-5 h-5" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+      <div className="flex items-center gap-2">
+        <ThemeSwitcher />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <UserIcon className="w-5 h-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium">My Account</p>
@@ -105,7 +109,8 @@ export function DashboardHeader({ user }: { user: User }) {
             Sign Out
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+        </DropdownMenu>
+      </div>
     </header>
   )
 }
