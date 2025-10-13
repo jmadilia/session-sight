@@ -107,25 +107,11 @@ export default async function DashboardPage() {
     .eq("therapist_id", user.id)
     .eq("status", "active");
 
-  console.log(
-    "[v0] Fetched clients for at-risk analysis:",
-    clientsWithData?.length
-  );
-
   // Calculate risk factors for each client
   const atRiskClients =
     clientsWithData
       ?.map((client) => {
         const sessions = client.sessions || [];
-        const appointments = client.appointments || [];
-
-        console.log(
-          `[v0] Analyzing client ${client.first_name} ${client.last_name}:`,
-          {
-            sessionsCount: sessions.length,
-            appointmentsCount: appointments.length,
-          }
-        );
 
         // Calculate risk factors
         const recentSessions = sessions
@@ -148,11 +134,6 @@ export default async function DashboardPage() {
         const recentNoShows = recentSessions.filter(
           (s) => s.status === "no-show"
         ).length;
-
-        console.log(`[v0] ${client.first_name} cancellations/no-shows:`, {
-          recentCancellations,
-          recentNoShows,
-        });
 
         // Risk Factor 2: Declining mood/progress scores
         const completedSessions = sessions
@@ -216,15 +197,6 @@ export default async function DashboardPage() {
             return (s.mood_rating || 0) < 5 || (s.progress_rating || 0) < 5;
           });
 
-        console.log(`[v0] ${client.first_name} risk factors:`, {
-          recentCancellations,
-          recentNoShows,
-          decliningTrend,
-          sessionGap,
-          daysSinceLastSession,
-          lowScores,
-        });
-
         // Calculate overall risk score (0-100)
         let riskScore = 0;
         const riskFactors: string[] = [];
@@ -257,11 +229,6 @@ export default async function DashboardPage() {
           riskFactors.push("Recent low mood/progress scores");
         }
 
-        console.log(`[v0] Risk analysis for ${client.first_name}:`, {
-          riskScore,
-          riskFactors,
-        });
-
         // Determine risk level
         let riskLevel: "high" | "medium" | "low" = "low";
         if (riskScore >= 50) riskLevel = "high";
@@ -281,8 +248,6 @@ export default async function DashboardPage() {
       })
       .filter((client) => client.riskLevel !== "low")
       .sort((a, b) => b.riskScore - a.riskScore) || [];
-
-  console.log("[v0] At-risk clients found:", atRiskClients.length);
 
   return (
     <div className="space-y-8">
