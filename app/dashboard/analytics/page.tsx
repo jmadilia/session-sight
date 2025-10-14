@@ -1,50 +1,100 @@
-import { createClient } from "@/utils/supabase/server";
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { EngagementChart } from "@/components/engagement-chart";
 import { SessionTypeChart } from "@/components/session-type-chart";
 import { ClientStatusChart } from "@/components/client-status-chart";
-import { TrendingUp, TrendingDown, Users, Calendar } from "lucide-react";
+import { OutcomeChart } from "@/components/analytics/outcome-chart";
+import { RetentionChart } from "@/components/analytics/retention-chart";
+import { AnalyticsInsights } from "@/components/analytics/analytics-insights";
+import { DateRangeFilter } from "@/components/analytics/date-range-filter";
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  Calendar,
+  Download,
+  FileText,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-export default async function AnalyticsPage() {
-  const supabase = await createClient();
+type DateRange = "7d" | "30d" | "90d" | "custom";
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default function AnalyticsPage() {
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange>("30d");
+  const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
+  const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  if (!user) {
-    redirect("/auth/login");
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  async function fetchData() {
+    const supabase = createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const [sessionsResult, clientsResult] = await Promise.all([
+      supabase
+        .from("sessions")
+        .select("*")
+        .eq("therapist_id", user.id)
+        .order("session_date", { ascending: true }),
+      supabase.from("clients").select("*").eq("therapist_id", user.id),
+    ]);
+
+    setSessions(sessionsResult.data || []);
+    setClients(clientsResult.data || []);
+    setLoading(false);
   }
 
-  // Fetch all sessions for analytics
-  const { data: allSessions } = await supabase
-    .from("sessions")
-    .select("*")
-    .eq("therapist_id", user.id)
-    .order("session_date", { ascending: true });
+  // Calculate date range
+  const getDateRange = () => {
+    const now = new Date();
+    let startDate: Date;
+    let endDate = now;
 
-  // Fetch clients
-  const { data: clients } = await supabase
-    .from("clients")
-    .select("*")
-    .eq("therapist_id", user.id);
+    if (dateRange === "custom" && customStartDate && customEndDate) {
+      startDate = customStartDate;
+      endDate = customEndDate;
+    } else {
+      const days = dateRange === "7d" ? 7 : dateRange === "30d" ? 30 : 90;
+      startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    }
+
+    return { startDate, endDate };
+  };
+
+  const { startDate, endDate } = getDateRange();
+
+  // Filter sessions by date range
+  const filteredSessions = sessions.filter((s) => {
+    const sessionDate = new Date(s.session_date);
+    return sessionDate >= startDate && sessionDate <= endDate;
+  });
+
+  // Calculate previous period for comparison
+  const periodLength = endDate.getTime() - startDate.getTime();
+  const previousStartDate = new Date(startDate.getTime() - periodLength);
+  const previousEndDate = startDate;
+
+  const previousSessions = sessions.filter((s) => {
+    const sessionDate = new Date(s.session_date);
+    return sessionDate >= previousStartDate && sessionDate < previousEndDate;
+  });
 
   // Calculate metrics
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-
-  const recentSessions =
-    allSessions?.filter((s) => new Date(s.session_date) >= thirtyDaysAgo) || [];
-  const previousSessions =
-    allSessions?.filter(
-      (s) =>
-        new Date(s.session_date) >= sixtyDaysAgo &&
-        new Date(s.session_date) < thirtyDaysAgo
-    ) || [];
-
-  const completedRecent = recentSessions.filter(
+  const completedCurrent = filteredSessions.filter(
     (s) => s.status === "completed"
   ).length;
   const completedPrevious = previousSessions.filter(
@@ -52,26 +102,25 @@ export default async function AnalyticsPage() {
   ).length;
   const sessionGrowth =
     completedPrevious > 0
-      ? ((completedRecent - completedPrevious) / completedPrevious) * 100
+      ? ((completedCurrent - completedPrevious) / completedPrevious) * 100
       : 0;
 
-  const cancelledRecent = recentSessions.filter(
+  const cancelledCurrent = filteredSessions.filter(
     (s) => s.status === "cancelled" || s.status === "no-show"
   ).length;
   const cancellationRate =
-    recentSessions.length > 0
-      ? (cancelledRecent / recentSessions.length) * 100
+    filteredSessions.length > 0
+      ? (cancelledCurrent / filteredSessions.length) * 100
       : 0;
 
-  const activeClients =
-    clients?.filter((c) => c.status === "active").length || 0;
-  const totalClients = clients?.length || 0;
+  const activeClients = clients.filter((c) => c.status === "active").length;
+  const totalClients = clients.length;
   const retentionRate =
     totalClients > 0 ? (activeClients / totalClients) * 100 : 0;
 
-  // Calculate average mood and progress
   const completedWithRatings =
-    allSessions?.filter((s) => s.status === "completed" && s.mood_rating) || [];
+    filteredSessions.filter((s) => s.status === "completed" && s.mood_rating) ||
+    [];
   const avgMood =
     completedWithRatings.length > 0
       ? completedWithRatings.reduce((sum, s) => sum + (s.mood_rating || 0), 0) /
@@ -85,25 +134,94 @@ export default async function AnalyticsPage() {
         ) / completedWithRatings.length
       : 0;
 
+  // Export functions
+  const exportToCSV = () => {
+    const csvData = filteredSessions.map((s) => ({
+      Date: s.session_date,
+      Type: s.session_type,
+      Status: s.status,
+      Duration: s.duration_minutes,
+      Mood: s.mood_rating || "N/A",
+      Progress: s.progress_rating || "N/A",
+    }));
+
+    const headers = Object.keys(csvData[0] || {}).join(",");
+    const rows = csvData.map((row) => Object.values(row).join(","));
+    const csv = [headers, ...rows].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `analytics-${dateRange}-${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
+    a.click();
+
+    toast({
+      title: "Export successful",
+      description: "Analytics data exported to CSV",
+    });
+  };
+
+  const exportToPDF = () => {
+    toast({
+      title: "PDF Export",
+      description: "PDF export functionality coming soon",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        Loading analytics...
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
-        <p className="text-muted-foreground mt-2">
-          Practice insights and client engagement trends
-        </p>
+    <div className="space-y-6">
+      {/* Header with filters and export */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Analytics & Reports
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Practice insights and client engagement trends
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <DateRangeFilter
+            value={dateRange}
+            onChange={setDateRange}
+            customStartDate={customStartDate}
+            customEndDate={customEndDate}
+            onCustomStartDateChange={setCustomStartDate}
+            onCustomEndDateChange={setCustomEndDate}
+          />
+          <Button variant="outline" size="sm" onClick={exportToCSV}>
+            <Download className="w-4 h-4 mr-2" />
+            CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportToPDF}>
+            <FileText className="w-4 h-4 mr-2" />
+            PDF
+          </Button>
+        </div>
       </div>
 
+      {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Sessions (30d)
+              Completed Sessions
             </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedRecent}</div>
+            <div className="text-2xl font-bold">{completedCurrent}</div>
             <div className="flex items-center text-xs text-muted-foreground mt-1">
               {sessionGrowth >= 0 ? (
                 <>
@@ -120,7 +238,7 @@ export default async function AnalyticsPage() {
                   </span>
                 </>
               )}
-              <span className="ml-1">from previous period</span>
+              <span className="ml-1">vs previous period</span>
             </div>
           </CardContent>
         </Card>
@@ -137,7 +255,7 @@ export default async function AnalyticsPage() {
               {cancellationRate.toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {cancelledRecent} of {recentSessions.length} sessions
+              {cancelledCurrent} of {filteredSessions.length} sessions
             </p>
           </CardContent>
         </Card>
@@ -162,7 +280,7 @@ export default async function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Avg Client Mood
+              Avg Client Outcomes
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -175,12 +293,27 @@ export default async function AnalyticsPage() {
         </Card>
       </div>
 
+      {/* Insights */}
+      <AnalyticsInsights
+        sessions={filteredSessions}
+        clients={clients}
+        cancellationRate={cancellationRate}
+        sessionGrowth={sessionGrowth}
+        retentionRate={retentionRate}
+      />
+
+      {/* Charts Grid */}
       <div className="grid gap-6 md:grid-cols-2">
-        <EngagementChart sessions={allSessions || []} />
-        <SessionTypeChart sessions={allSessions || []} />
+        <EngagementChart sessions={sessions} />
+        <SessionTypeChart sessions={filteredSessions} />
       </div>
 
-      <ClientStatusChart clients={clients || []} />
+      <div className="grid gap-6 md:grid-cols-2">
+        <OutcomeChart sessions={sessions} />
+        <RetentionChart clients={clients} sessions={sessions} />
+      </div>
+
+      <ClientStatusChart clients={clients} />
     </div>
   );
 }
