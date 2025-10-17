@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { AppointmentsFilter } from "@/components/appointments-filter";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import { Calendar } from "lucide-react";
 
 type Appointment = {
   id: string;
@@ -133,12 +134,23 @@ export default function AppointmentsPage() {
             Schedule and manage upcoming sessions
           </p>
         </div>
-        <Button asChild className="w-full sm:w-auto">
-          <Link href="/dashboard/appointments/new">
-            <Plus className="w-4 h-4 mr-2" />
-            Schedule Appointment
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            className="w-full sm:w-auto bg-transparent">
+            <Link href="/dashboard/appointments/calendar">
+              <Calendar className="w-4 h-4 mr-2" />
+              Calendar View
+            </Link>
+          </Button>
+          <Button asChild className="w-full sm:w-auto">
+            <Link href="/dashboard/appointments/new">
+              <Plus className="w-4 h-4 mr-2" />
+              Schedule Appointment
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card>

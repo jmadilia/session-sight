@@ -2,8 +2,11 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { NewAppointmentForm } from "@/components/new-appointment-form";
 
-export default async function NewAppointmentPage(props: any) {
-  const { searchParams } = props as { searchParams: { client?: string } };
+export default async function NewAppointmentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ client?: string; datetime?: string }>;
+}) {
   const supabase = await createClient();
 
   const {
@@ -13,6 +16,8 @@ export default async function NewAppointmentPage(props: any) {
   if (!user) {
     redirect("/auth/login");
   }
+
+  const params = await searchParams;
 
   const { data: clients } = await supabase
     .from("clients")
@@ -35,7 +40,8 @@ export default async function NewAppointmentPage(props: any) {
       <NewAppointmentForm
         therapistId={user.id}
         clients={clients || []}
-        preselectedClientId={searchParams.client}
+        preselectedClientId={params.client}
+        preselectedDateTime={params.datetime}
       />
     </div>
   );

@@ -28,16 +28,29 @@ interface NewAppointmentFormProps {
   therapistId: string;
   clients: Client[];
   preselectedClientId?: string;
+  preselectedDateTime?: string; // Added prop for preselected date/time
 }
 
 export function NewAppointmentForm({
   therapistId,
   clients,
   preselectedClientId,
+  preselectedDateTime,
 }: NewAppointmentFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
+  const formatDateTimeLocal = (isoString?: string) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -112,6 +125,7 @@ export function NewAppointmentForm({
                 name="appointment_date"
                 type="datetime-local"
                 min={new Date().toISOString().slice(0, 16)}
+                defaultValue={formatDateTimeLocal(preselectedDateTime)}
                 required
               />
             </div>
