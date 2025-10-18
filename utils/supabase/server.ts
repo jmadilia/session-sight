@@ -1,10 +1,13 @@
-import { CookieOptions, createServerClient } from "@supabase/ssr";
+import {
+  type CookieOptions,
+  createServerClient as createServerClientSSR,
+} from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export const createClient = async () => {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClientSSR(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -29,7 +32,7 @@ export const createClient = async () => {
 export const createClientWithServiceRole = async () => {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClientSSR(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
@@ -50,3 +53,5 @@ export const createClientWithServiceRole = async () => {
     }
   );
 };
+
+export const createServerClient = createClient;

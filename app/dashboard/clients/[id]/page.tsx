@@ -19,6 +19,7 @@ import {
   GripVertical,
   Settings,
   Eye,
+  Target,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
@@ -814,6 +815,12 @@ export default function ClientDetailPage() {
             onClick={() => setIsCustomizing(!isCustomizing)}>
             <Settings className="w-4 h-4 mr-2" />
             {isCustomizing ? "Done" : "Customize"}
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/dashboard/clients/${client.id}/treatment-plans`}>
+              <Target className="w-4 h-4 mr-2" />
+              Treatment Plans
+            </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href={`/dashboard/clients/${client.id}/edit`}>
