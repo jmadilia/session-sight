@@ -22,6 +22,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 import { createBrowserClient } from "@/utils/supabase/client";
 
 interface EditGoalFormProps {
@@ -33,6 +45,7 @@ interface EditGoalFormProps {
 export function EditGoalForm({ clientId, planId, goal }: EditGoalFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
     title: goal.title,
     description: goal.description || "",
@@ -72,6 +85,25 @@ export function EditGoalForm({ clientId, planId, goal }: EditGoalFormProps) {
       alert("Failed to update goal. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+
+    try {
+      const supabase = createBrowserClient();
+
+      const { error } = await supabase.from("goals").delete().eq("id", goal.id);
+
+      if (error) throw error;
+
+      router.push(`/dashboard/clients/${clientId}/treatment-plans/${planId}`);
+      router.refresh();
+    } catch (error) {
+      console.error("Error deleting goal:", error);
+      alert("Failed to delete goal. Please try again.");
+      setDeleting(false);
     }
   };
 
@@ -180,7 +212,7 @@ export function EditGoalForm({ clientId, planId, goal }: EditGoalFormProps) {
           </div>
 
           <div className="flex gap-2">
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || deleting}>
               {loading ? "Saving..." : "Save Changes"}
             </Button>
             <Button
@@ -190,9 +222,41 @@ export function EditGoalForm({ clientId, planId, goal }: EditGoalFormProps) {
                 router.push(
                   `/dashboard/clients/${clientId}/treatment-plans/${planId}`
                 )
-              }>
+              }
+              disabled={loading || deleting}>
               Cancel
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  disabled={loading || deleting}>
+                  <Trash2 className="h-4 w-4 text-white" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Goal</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this goal? This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deleting}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="bg-destructive text-white hover:bg-destructive/90">
+                    {deleting ? "Deleting..." : "Delete Goal"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </form>
       </CardContent>

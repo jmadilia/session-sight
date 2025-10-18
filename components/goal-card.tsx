@@ -38,7 +38,7 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-500/10 text-red-700 dark:text-red-400";
+        return "bg-red-600 text-white dark:bg-red-600 dark:text-white";
       case "medium":
         return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400";
       case "low":
@@ -57,7 +57,7 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
       case "not_started":
         return "bg-gray-500/10 text-gray-700 dark:text-gray-400";
       case "discontinued":
-        return "bg-red-500/10 text-red-700 dark:text-red-400";
+        return "bg-red-600 text-white dark:bg-red-600 dark:text-white";
       default:
         return "bg-gray-500/10 text-gray-700 dark:text-gray-400";
     }

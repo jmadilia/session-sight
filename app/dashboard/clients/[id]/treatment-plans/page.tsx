@@ -77,7 +77,7 @@ export default async function TreatmentPlansPage({ params }: PageProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-500/10 text-red-700 dark:text-red-400";
+        return "bg-red-600 text-white dark:bg-red-600 dark:text-white";
       case "medium":
         return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400";
       case "low":

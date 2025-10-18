@@ -16,6 +16,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 
@@ -34,6 +46,7 @@ interface Client {
 export function EditClientForm({ client }: { client: Client }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
     first_name: client.first_name,
     last_name: client.last_name,
@@ -77,6 +90,29 @@ export function EditClientForm({ client }: { client: Client }) {
       toast.error("Failed to update client");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+
+    try {
+      const supabase = createClient();
+
+      const { error } = await supabase
+        .from("clients")
+        .delete()
+        .eq("id", client.id);
+
+      if (error) throw error;
+
+      toast.success("Client deleted successfully");
+      router.push("/dashboard/clients");
+      router.refresh();
+    } catch (error) {
+      console.error("Error deleting client:", error);
+      toast.error("Failed to delete client");
+      setDeleting(false);
     }
   };
 
@@ -197,16 +233,52 @@ export function EditClientForm({ client }: { client: Client }) {
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button type="submit" disabled={loading} className="flex-1">
+            <Button
+              type="submit"
+              disabled={loading || deleting}
+              className="flex-1">
               {loading ? "Saving..." : "Save Changes"}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => router.push(`/dashboard/clients/${client.id}`)}
-              disabled={loading}>
+              disabled={loading || deleting}>
               Cancel
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  disabled={loading || deleting}>
+                  <Trash2 className="h-4 w-4 text-white" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Client</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {client.first_name}{" "}
+                    {client.last_name}? This action cannot be undone and will
+                    permanently delete all associated sessions, notes, and
+                    treatment plans.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deleting}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="bg-destructive text-white hover:bg-destructive/90">
+                    {deleting ? "Deleting..." : "Delete Client"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </CardContent>
       </Card>
