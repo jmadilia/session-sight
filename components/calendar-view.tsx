@@ -228,12 +228,12 @@ export function CalendarView() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Calendar View
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-sm text-muted-foreground mt-2">
             {view === "week" ? "Week of " : ""}
             {currentDate.toLocaleDateString("en-US", {
               month: "long",
@@ -241,20 +241,25 @@ export function CalendarView() {
             })}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setView(view === "week" ? "month" : "week")}>
+            onClick={() => setView(view === "week" ? "month" : "week")}
+            className="w-full sm:w-auto">
             {view === "week" ? "Month" : "Week"} View
           </Button>
-          <Button variant="outline" size="sm" asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="w-full sm:w-auto bg-transparent">
             <Link href="/dashboard/appointments">
               <List className="w-4 h-4 mr-2" />
               List View
             </Link>
           </Button>
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="w-full sm:w-auto">
             <Link href="/dashboard/appointments/new">
               <Plus className="w-4 h-4 mr-2" />
               New
@@ -265,55 +270,62 @@ export function CalendarView() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigateDate("prev")}>
+              onClick={() => navigateDate("prev")}
+              className="flex-shrink-0">
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentDate(new Date())}>
+              onClick={() => setCurrentDate(new Date())}
+              className="flex-shrink-0">
               Today
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigateDate("next")}>
+              onClick={() => navigateDate("next")}
+              className="flex-shrink-0">
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-2 sm:p-6">
           <DndContext
             onDragEnd={handleDragEnd}
             onDragStart={(e) => setActiveId(e.active.id as string)}>
-            <div className="overflow-x-auto">
-              {view === "week" ? (
-                <WeekView
-                  days={days}
-                  hours={hours}
-                  getAppointmentsForSlot={getAppointmentsForSlot}
-                  getSessionTypeColor={getSessionTypeColor}
-                  onSlotClick={(date, hour) => setSelectedSlot({ date, hour })}
-                  onAppointmentClick={(appt) => setSelectedAppointment(appt)}
-                />
-              ) : (
-                <MonthView
-                  days={days}
-                  currentDate={currentDate}
-                  appointments={appointments}
-                  getSessionTypeColor={getSessionTypeColor}
-                  onDayClick={(date) => setSelectedSlot({ date, hour: 9 })}
-                  onAppointmentClick={(appt) => setSelectedAppointment(appt)}
-                />
-              )}
+            <div className="overflow-x-auto -mx-2 sm:mx-0">
+              <div className="min-w-[600px] sm:min-w-0">
+                {view === "week" ? (
+                  <WeekView
+                    days={days}
+                    hours={hours}
+                    getAppointmentsForSlot={getAppointmentsForSlot}
+                    getSessionTypeColor={getSessionTypeColor}
+                    onSlotClick={(date, hour) =>
+                      setSelectedSlot({ date, hour })
+                    }
+                    onAppointmentClick={(appt) => setSelectedAppointment(appt)}
+                  />
+                ) : (
+                  <MonthView
+                    days={days}
+                    currentDate={currentDate}
+                    appointments={appointments}
+                    getSessionTypeColor={getSessionTypeColor}
+                    onDayClick={(date) => setSelectedSlot({ date, hour: 9 })}
+                    onAppointmentClick={(appt) => setSelectedAppointment(appt)}
+                  />
+                )}
+              </div>
             </div>
             <DragOverlay>
               {activeId ? (
-                <div className="p-2 bg-primary text-primary-foreground rounded shadow-lg">
+                <div className="p-2 bg-primary text-primary-foreground rounded shadow-lg text-xs sm:text-sm">
                   Dragging...
                 </div>
               ) : null}

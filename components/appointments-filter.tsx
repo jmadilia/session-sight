@@ -69,6 +69,7 @@ export function AppointmentsFilter({
               key={status}
               checked={statusFilter.includes(status)}
               onCheckedChange={() => toggleStatus(status)}
+              onSelect={(e) => e.preventDefault()}
               className="capitalize">
               {status}
             </DropdownMenuCheckboxItem>
@@ -76,7 +77,9 @@ export function AppointmentsFilter({
 
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Filter by Date Range</DropdownMenuLabel>
-          <div className="p-2 space-y-2">
+          <div
+            className="p-2 space-y-2"
+            onSelect={(e: any) => e.preventDefault()}>
             <div>
               <Label htmlFor="appt-start-date" className="text-xs">
                 Start Date
@@ -88,7 +91,7 @@ export function AppointmentsFilter({
                 onChange={(e) =>
                   onDateRangeChange({ ...dateRange, start: e.target.value })
                 }
-                className="h-8"
+                className="h-8 w-full"
               />
             </div>
             <div>
@@ -102,7 +105,7 @@ export function AppointmentsFilter({
                 onChange={(e) =>
                   onDateRangeChange({ ...dateRange, end: e.target.value })
                 }
-                className="h-8"
+                className="h-8 w-full"
               />
             </div>
           </div>

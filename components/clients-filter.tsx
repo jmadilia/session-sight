@@ -59,6 +59,7 @@ export function ClientsFilter({
               key={status}
               checked={statusFilter.includes(status)}
               onCheckedChange={() => toggleStatus(status)}
+              onSelect={(e) => e.preventDefault()}
               className="capitalize">
               {status}
             </DropdownMenuCheckboxItem>

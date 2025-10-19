@@ -89,12 +89,12 @@ function SortableSection({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative">
+    <div ref={setNodeRef} style={style} className="relative touch-none">
       {isCustomizing && (
         <div
           {...attributes}
           {...listeners}
-          className="absolute right-2 top-2 cursor-grab active:cursor-grabbing z-10 p-1.5 bg-background border border-border rounded hover:bg-accent transition-colors shadow-sm">
+          className="absolute right-2 top-2 cursor-grab active:cursor-grabbing z-10 p-1.5 bg-background border border-border rounded hover:bg-accent transition-colors shadow-sm touch-none">
           <GripVertical className="w-4 h-4 text-muted-foreground" />
         </div>
       )}
@@ -760,23 +760,25 @@ export default function ClientDetailPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <Button asChild variant="ghost" size="icon">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <Button asChild variant="ghost" size="icon" className="self-start">
           <Link href="/dashboard/clients">
             <ArrowLeft className="w-4 h-4" />
           </Link>
         </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">
             {client.first_name} {client.last_name}
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-sm">
             Client details and session history
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {isAtRisk && (
-            <Badge variant="destructive" className="gap-1 text-white">
+            <Badge
+              variant="destructive"
+              className="gap-1 text-white justify-center">
               <AlertTriangle className="w-3 h-3" />
               At Risk
             </Badge>
@@ -788,12 +790,16 @@ export default function ClientDetailPage() {
                 : client.status === "inactive"
                 ? "secondary"
                 : "outline"
-            }>
+            }
+            className="justify-center">
             {client.status}
           </Badge>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto bg-transparent">
                 <Eye className="w-4 h-4 mr-2" />
                 Sections
               </Button>
@@ -812,17 +818,26 @@ export default function ClientDetailPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setIsCustomizing(!isCustomizing)}>
+            onClick={() => setIsCustomizing(!isCustomizing)}
+            className="w-full sm:w-auto">
             <Settings className="w-4 h-4 mr-2" />
             {isCustomizing ? "Done" : "Customize"}
           </Button>
-          <Button asChild variant="outline" size="sm">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto bg-transparent">
             <Link href={`/dashboard/clients/${client.id}/treatment-plans`}>
               <Target className="w-4 h-4 mr-2" />
-              Treatment Plans
+              <span className="sm:inline">Treatment Plans</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto bg-transparent">
             <Link href={`/dashboard/clients/${client.id}/edit`}>
               <Edit className="w-4 h-4 mr-2" />
               Edit

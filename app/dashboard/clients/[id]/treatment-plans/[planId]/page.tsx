@@ -112,29 +112,35 @@ export default async function TreatmentPlanDetailsPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href={`/dashboard/clients/${id}/treatment-plans`}>
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{plan.title}</h1>
-            <p className="text-muted-foreground">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold truncate">
+              {plan.title}
+            </h1>
+            <p className="text-sm text-muted-foreground truncate">
               {client?.first_name} {client?.last_name}
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="w-full sm:w-auto bg-transparent">
             <Link
               href={`/dashboard/clients/${id}/treatment-plans/${planId}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
               Edit Plan
             </Link>
           </Button>
-          <Button size="sm" asChild>
+          <Button size="sm" asChild className="w-full sm:w-auto">
             <Link
               href={`/dashboard/clients/${id}/treatment-plans/${planId}/goals/new`}>
               <Plus className="mr-2 h-4 w-4" />
