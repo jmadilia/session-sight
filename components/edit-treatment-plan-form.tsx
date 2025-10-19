@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,7 @@ export function EditTreatmentPlanForm({
   plan,
 }: EditTreatmentPlanFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
@@ -77,10 +78,19 @@ export function EditTreatmentPlanForm({
 
     if (error) {
       console.error("Error updating treatment plan:", error);
-      alert("Failed to update treatment plan");
+      toast({
+        title: "Error",
+        description: "Failed to update treatment plan. Please try again.",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
+
+    toast({
+      title: "Success",
+      description: "Treatment plan updated successfully",
+    });
 
     router.push(`/dashboard/clients/${clientId}/treatment-plans/${plan.id}`);
     router.refresh();
@@ -99,11 +109,20 @@ export function EditTreatmentPlanForm({
 
       if (error) throw error;
 
+      toast({
+        title: "Success",
+        description: "Treatment plan deleted successfully",
+      });
+
       router.push(`/dashboard/clients/${clientId}`);
       router.refresh();
     } catch (error) {
       console.error("Error deleting treatment plan:", error);
-      alert("Failed to delete treatment plan");
+      toast({
+        title: "Error",
+        description: "Failed to delete treatment plan. Please try again.",
+        variant: "destructive",
+      });
       setDeleting(false);
     }
   };

@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,7 @@ interface EditGoalFormProps {
 
 export function EditGoalForm({ clientId, planId, goal }: EditGoalFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
@@ -78,11 +79,20 @@ export function EditGoalForm({ clientId, planId, goal }: EditGoalFormProps) {
 
       if (error) throw error;
 
+      toast({
+        title: "Success",
+        description: "Goal updated successfully",
+      });
+
       router.push(`/dashboard/clients/${clientId}/treatment-plans/${planId}`);
       router.refresh();
     } catch (error) {
       console.error("Error updating goal:", error);
-      alert("Failed to update goal. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to update goal. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -98,11 +108,20 @@ export function EditGoalForm({ clientId, planId, goal }: EditGoalFormProps) {
 
       if (error) throw error;
 
+      toast({
+        title: "Success",
+        description: "Goal deleted successfully",
+      });
+
       router.push(`/dashboard/clients/${clientId}/treatment-plans/${planId}`);
       router.refresh();
     } catch (error) {
       console.error("Error deleting goal:", error);
-      alert("Failed to delete goal. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to delete goal. Please try again.",
+        variant: "destructive",
+      });
       setDeleting(false);
     }
   };

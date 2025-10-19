@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ interface NewGoalFormProps {
 
 export function NewGoalForm({ clientId, planId }: NewGoalFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -58,10 +59,19 @@ export function NewGoalForm({ clientId, planId }: NewGoalFormProps) {
 
     if (error) {
       console.error("Error creating goal:", error);
-      alert("Failed to create goal");
+      toast({
+        title: "Error",
+        description: "Failed to create goal. Please try again.",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
+
+    toast({
+      title: "Success",
+      description: "Goal created successfully",
+    });
 
     router.push(`/dashboard/clients/${clientId}/treatment-plans/${planId}`);
     router.refresh();

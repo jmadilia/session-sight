@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ export function NewInterventionForm({
   goalId,
 }: NewInterventionFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -51,10 +52,19 @@ export function NewInterventionForm({
 
     if (error) {
       console.error("Error creating intervention:", error);
-      alert("Failed to create intervention");
+      toast({
+        title: "Error",
+        description: "Failed to create intervention. Please try again.",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
+
+    toast({
+      title: "Success",
+      description: "Intervention created successfully",
+    });
 
     router.push(`/dashboard/clients/${clientId}/treatment-plans/${planId}`);
     router.refresh();

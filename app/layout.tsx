@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 import { Inter, Roboto_Mono } from "next/font/google";
 
@@ -31,17 +32,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-        <body className={`font-sans ${inter.variable} ${robotoMono.variable}`}>
-          <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange>
-            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-            </ThemeProvider>
-          <Analytics />
-        </body>
+      <body className={`font-sans ${inter.variable} ${robotoMono.variable}`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange>
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        </ThemeProvider>
+        <Analytics />
+        <Toaster />
+      </body>
     </html>
   );
 }
-

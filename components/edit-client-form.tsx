@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface Client {
   id: string;
@@ -45,6 +45,7 @@ interface Client {
 
 export function EditClientForm({ client }: { client: Client }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
@@ -82,12 +83,19 @@ export function EditClientForm({ client }: { client: Client }) {
 
       if (error) throw error;
 
-      toast.success("Client updated successfully");
+      toast({
+        title: "Success",
+        description: "Client updated successfully",
+      });
       router.push(`/dashboard/clients/${client.id}`);
       router.refresh();
     } catch (error) {
       console.error("Error updating client:", error);
-      toast.error("Failed to update client");
+      toast({
+        title: "Error",
+        description: "Failed to update client. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -106,12 +114,19 @@ export function EditClientForm({ client }: { client: Client }) {
 
       if (error) throw error;
 
-      toast.success("Client deleted successfully");
+      toast({
+        title: "Success",
+        description: "Client deleted successfully",
+      });
       router.push("/dashboard/clients");
       router.refresh();
     } catch (error) {
       console.error("Error deleting client:", error);
-      toast.error("Failed to delete client");
+      toast({
+        title: "Error",
+        description: "Failed to delete client. Please try again.",
+        variant: "destructive",
+      });
       setDeleting(false);
     }
   };

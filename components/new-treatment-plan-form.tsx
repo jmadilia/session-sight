@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -31,13 +31,12 @@ interface NewTreatmentPlanFormProps {
 
 export function NewTreatmentPlanForm({ clientId }: NewTreatmentPlanFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     const formData = new FormData(e.currentTarget);
     const supabase = createBrowserClient();
@@ -47,7 +46,11 @@ export function NewTreatmentPlanForm({ clientId }: NewTreatmentPlanFormProps) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("You must be logged in to create a treatment plan");
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to create a treatment plan",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
@@ -67,10 +70,19 @@ export function NewTreatmentPlanForm({ clientId }: NewTreatmentPlanFormProps) {
       .single();
 
     if (insertError) {
-      setError(insertError.message);
+      toast({
+        title: "Error",
+        description: "Failed to create treatment plan. Please try again.",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
+
+    toast({
+      title: "Success",
+      description: "Treatment plan created successfully",
+    });
 
     router.push(`/dashboard/clients/${clientId}/treatment-plans/${data.id}`);
     router.refresh();
@@ -86,12 +98,6 @@ export function NewTreatmentPlanForm({ clientId }: NewTreatmentPlanFormProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {error && (
-            <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-400 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
-
           <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>
             <Input

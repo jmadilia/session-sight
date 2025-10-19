@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import { useToast } from "@/hooks/use-toast";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -36,6 +37,7 @@ export function NewProgressUpdateForm({
   goalId,
 }: NewProgressUpdateFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     update_date: new Date().toISOString().split("T")[0],
@@ -62,7 +64,11 @@ export function NewProgressUpdateForm({
 
     if (updateError) {
       console.error("Error creating progress update:", updateError);
-      alert("Failed to create progress update");
+      toast({
+        title: "Error",
+        description: "Failed to create progress update. Please try again.",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
@@ -80,6 +86,11 @@ export function NewProgressUpdateForm({
         console.error("Error updating goal progress:", goalError);
       }
     }
+
+    toast({
+      title: "Success",
+      description: "Progress update saved successfully",
+    });
 
     router.push(`/dashboard/clients/${clientId}/treatment-plans/${planId}`);
     router.refresh();
