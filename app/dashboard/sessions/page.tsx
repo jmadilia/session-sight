@@ -177,7 +177,7 @@ export default function SessionsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3">
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold truncate">
+                        <h3 className="text-base font-medium truncate">
                           {session.clients?.first_name}{" "}
                           {session.clients?.last_name}
                         </h3>

@@ -125,7 +125,7 @@ export default function AppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Appointments
@@ -134,7 +134,7 @@ export default function AppointmentsPage() {
             Schedule and manage upcoming sessions
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch gap-2 sm:flex-shrink-0">
           <Button
             asChild
             variant="outline"
@@ -192,7 +192,7 @@ export default function AppointmentsPage() {
                       <div className="flex items-start gap-3">
                         <CalendarIcon className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold truncate">
+                          <h3 className="text-base font-medium truncate">
                             {appt.clients?.first_name} {appt.clients?.last_name}
                           </h3>
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
@@ -284,7 +284,7 @@ export default function AppointmentsPage() {
                     key={appt.id}
                     className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 border rounded-lg opacity-60">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold truncate">
+                      <h3 className="text-base font-medium truncate">
                         {appt.clients?.first_name} {appt.clients?.last_name}
                       </h3>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
