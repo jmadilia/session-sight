@@ -141,7 +141,7 @@ export default function ClientsPage() {
                 <div
                   key={client.id}
                   role="listitem"
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg hover:bg-accent transition-all duration-200 focus-within:ring-2 focus-within:ring-ring">
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg hover:bg-accent hover:shadow-md transition-all duration-200 focus-within:ring-2 focus-within:ring-ring">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3">
                       <div className="min-w-0 flex-1">

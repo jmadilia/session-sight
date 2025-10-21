@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 import { useState } from "react";
 import {
   Card,
@@ -64,16 +66,24 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
   };
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-md focus-within:ring-2 focus-within:ring-ring">
+    <Card className="transition-all duration-200 hover:shadow-lg focus-within:ring-2 focus-within:ring-ring">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="space-y-1 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <CardTitle className="text-lg">{goal.title}</CardTitle>
-              <Badge className={getPriorityColor(goal.priority)}>
+              <Badge
+                className={cn(
+                  getPriorityColor(goal.priority),
+                  "transition-colors duration-200"
+                )}>
                 {goal.priority}
               </Badge>
-              <Badge className={getStatusColor(goal.status)}>
+              <Badge
+                className={cn(
+                  getStatusColor(goal.status),
+                  "transition-colors duration-200"
+                )}>
                 {goal.status.replace("_", " ")}
               </Badge>
             </div>
@@ -86,7 +96,8 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
               variant="ghost"
               size="sm"
               asChild
-              aria-label={`Edit ${goal.title}`}>
+              aria-label={`Edit ${goal.title}`}
+              className="hover:scale-110 transition-transform duration-200">
               <Link
                 href={`/dashboard/clients/${clientId}/treatment-plans/${planId}/goals/${goal.id}/edit`}>
                 <Edit className="h-4 w-4" />
@@ -99,11 +110,12 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
               aria-label={
                 expanded ? "Collapse goal details" : "Expand goal details"
               }
-              aria-expanded={expanded}>
+              aria-expanded={expanded}
+              className="hover:scale-110 transition-transform duration-200">
               {expanded ? (
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUp className="h-4 w-4 transition-transform duration-200" />
               ) : (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4 transition-transform duration-200" />
               )}
             </Button>
           </div>
@@ -136,7 +148,7 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
         )}
 
         {expanded && (
-          <div className="space-y-4 pt-4 border-t animate-in fade-in-50 slide-in-from-top-2 duration-200">
+          <div className="space-y-4 pt-4 border-t animate-fade-in">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-sm">Interventions</h4>
@@ -161,7 +173,7 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
                   {goal.interventions.map((intervention: any) => (
                     <li
                       key={intervention.id}
-                      className="text-sm border-l-2 border-primary/20 pl-3">
+                      className="text-sm border-l-2 border-primary/20 pl-3 transition-colors duration-200 hover:border-primary/40">
                       <p className="font-medium">{intervention.title}</p>
                       {intervention.description && (
                         <p className="text-muted-foreground text-xs">
@@ -210,7 +222,7 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
                     .map((update: any) => (
                       <li
                         key={update.id}
-                        className="text-sm border-l-2 border-primary/20 pl-3">
+                        className="text-sm border-l-2 border-primary/20 pl-3 transition-colors duration-200 hover:border-primary/40">
                         <div className="flex items-center justify-between">
                           <p className="text-xs text-muted-foreground">
                             {new Date(update.update_date).toLocaleDateString()}
@@ -233,4 +245,3 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
     </Card>
   );
 }
-
