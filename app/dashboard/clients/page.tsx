@@ -81,7 +81,14 @@ export default function ClientsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">Loading...</div>
+      <div className="flex items-center justify-center h-64">
+        <div
+          className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+          role="status"
+          aria-label="Loading clients">
+          <span className="sr-only">Loading...</span>
+        </div>
+      </div>
     );
   }
 
@@ -108,12 +115,16 @@ export default function ClientsPage() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="relative flex-1 w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+                aria-hidden="true"
+              />
               <Input
                 placeholder="Search clients..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search clients by name or email"
               />
             </div>
             <ClientsFilter
@@ -125,11 +136,12 @@ export default function ClientsPage() {
         </CardHeader>
         <CardContent>
           {filteredClients.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-4" role="list">
               {filteredClients.map((client) => (
                 <div
                   key={client.id}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg hover:bg-accent transition-colors">
+                  role="listitem"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg hover:bg-accent transition-all duration-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-ring">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3">
                       <div className="min-w-0 flex-1">
@@ -165,7 +177,8 @@ export default function ClientsPage() {
                       asChild
                       variant="outline"
                       size="sm"
-                      className="w-full sm:w-auto bg-transparent">
+                      className="w-full sm:w-auto bg-transparent"
+                      aria-label={`View details for ${client.first_name} ${client.last_name}`}>
                       <Link href={`/dashboard/clients/${client.id}`}>
                         View Details
                       </Link>

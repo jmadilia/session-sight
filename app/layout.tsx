@@ -7,22 +7,35 @@ import { Suspense } from "react";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-import { Inter, Roboto_Mono } from "next/font/google";
+import {
+  Plus_Jakarta_Sans,
+  JetBrains_Mono,
+  Crimson_Pro,
+} from "next/font/google";
 
-const inter = Inter({
+// Initialize fonts with better weights for hierarchy
+const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-const robotoMono = Roboto_Mono({
+const jetBrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
+
+const crimsonPro = Crimson_Pro({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "SessionSight - AI-Powered Mental Health Journaling",
+  title: "SessionSight - Therapist Practice Management",
   description:
-    "Track your mental health journey with AI-powered insights, sentiment analysis, and personalized recommendations.",
+    "Analytics and insights platform for mental health professionals to improve client engagement and treatment outcomes.",
 };
 
 export default function RootLayout({
@@ -31,8 +44,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans ${inter.variable} ${robotoMono.variable}`}>
+    <html lang="en" className="dark">
+      <body
+        className={`font-sans antialiased ${plusJakartaSans.variable} ${jetBrainsMono.variable} ${crimsonPro.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

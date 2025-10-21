@@ -64,7 +64,7 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
   };
 
   return (
-    <Card>
+    <Card className="transition-all duration-200 hover:shadow-md focus-within:ring-2 focus-within:ring-ring">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="space-y-1 flex-1">
@@ -82,7 +82,11 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
             )}
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              aria-label={`Edit ${goal.title}`}>
               <Link
                 href={`/dashboard/clients/${clientId}/treatment-plans/${planId}/goals/${goal.id}/edit`}>
                 <Edit className="h-4 w-4" />
@@ -91,7 +95,11 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setExpanded(!expanded)}>
+              onClick={() => setExpanded(!expanded)}
+              aria-label={
+                expanded ? "Collapse goal details" : "Expand goal details"
+              }
+              aria-expanded={expanded}>
               {expanded ? (
                 <ChevronUp className="h-4 w-4" />
               ) : (
@@ -107,12 +115,19 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
             <span className="text-muted-foreground">Progress</span>
             <span className="font-medium">{goal.progress_percentage}%</span>
           </div>
-          <Progress value={goal.progress_percentage} className="h-2" />
+          <Progress
+            value={goal.progress_percentage}
+            className="h-2"
+            aria-label={`Goal progress: ${goal.progress_percentage}%`}
+          />
         </div>
 
         {goal.target_date && (
           <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar
+              className="h-4 w-4 text-muted-foreground"
+              aria-hidden="true"
+            />
             <span className="text-muted-foreground">Target Date:</span>
             <span className="font-medium">
               {new Date(goal.target_date).toLocaleDateString()}
@@ -121,14 +136,18 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
         )}
 
         {expanded && (
-          <div className="space-y-4 pt-4 border-t">
+          <div className="space-y-4 pt-4 border-t animate-in fade-in-50 slide-in-from-top-2 duration-200">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-sm">Interventions</h4>
-                <Button variant="outline" size="sm" asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  aria-label="Add new intervention">
                   <Link
                     href={`/dashboard/clients/${clientId}/treatment-plans/${planId}/goals/${goal.id}/interventions/new`}>
-                    <Plus className="mr-1 h-3 w-3" />
+                    <Plus className="mr-1 h-3 w-3" aria-hidden="true" />
                     Add
                   </Link>
                 </Button>
@@ -138,7 +157,7 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
                   No interventions added yet
                 </p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-2" role="list">
                   {goal.interventions.map((intervention: any) => (
                     <li
                       key={intervention.id}
@@ -163,10 +182,14 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-sm">Progress Updates</h4>
-                <Button variant="outline" size="sm" asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  aria-label="Add new progress update">
                   <Link
                     href={`/dashboard/clients/${clientId}/treatment-plans/${planId}/goals/${goal.id}/progress/new`}>
-                    <Plus className="mr-1 h-3 w-3" />
+                    <Plus className="mr-1 h-3 w-3" aria-hidden="true" />
                     Add
                   </Link>
                 </Button>
@@ -176,7 +199,7 @@ export function GoalCard({ goal, clientId, planId }: GoalCardProps) {
                   No progress updates yet
                 </p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-2" role="list">
                   {goal.progress_updates
                     .sort(
                       (a: any, b: any) =>
