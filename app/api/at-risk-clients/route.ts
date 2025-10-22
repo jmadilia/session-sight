@@ -64,28 +64,27 @@ export async function GET() {
               new Date(a.session_date).getTime()
           );
 
-        const recentAppointments = appointments.filter((a) => {
-          const apptDate = new Date(a.appointment_date);
-          const thirtyDaysAgo = new Date();
-          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-          return apptDate >= thirtyDaysAgo;
-        });
-
-        // Risk Factor 1: Recent cancellations or no-shows
-        const recentCancellations = recentAppointments.filter(
-          (a) => a.status === "cancelled" || a.status === "no_show"
+        const recentCancellations = recentSessions.filter(
+          (s) => s.status === "cancelled"
         ).length;
-        const cancellationRate =
-          recentAppointments.length > 0
-            ? recentCancellations / recentAppointments.length
-            : 0;
+        const recentNoShows = recentSessions.filter(
+          (s) => s.status === "no-show"
+        ).length;
 
         // Risk Factor 2: Declining mood/progress scores
-        const completedSessions = recentSessions.filter(
-          (s) => s.status === "completed" && s.mood_rating && s.progress_rating
-        );
+        const completedSessions = sessions
+          .filter(
+            (s) =>
+              s.status === "completed" && s.mood_rating && s.progress_rating
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.session_date).getTime() -
+              new Date(a.session_date).getTime()
+          );
+
         let decliningTrend = false;
-        if (completedSessions.length >= 2) {
+        if (completedSessions.length >= 3) {
           const recent = completedSessions.slice(0, 2);
           const older = completedSessions.slice(2, 4);
           if (older.length > 0) {
@@ -115,39 +114,38 @@ export async function GET() {
               new Date(b.session_date).getTime() -
               new Date(a.session_date).getTime()
           )[0];
-        const daysSinceLastSession = lastSession
-          ? Math.floor(
-              (Date.now() - new Date(lastSession.session_date).getTime()) /
-                (1000 * 60 * 60 * 24)
-            )
-          : 999;
-        const sessionGap = daysSinceLastSession > 21;
 
-        // Risk Factor 4: Low recent mood/progress scores
+        let daysSinceLastSession = 0;
+        let sessionGap = false;
+
+        if (lastSession) {
+          daysSinceLastSession = Math.floor(
+            (Date.now() - new Date(lastSession.session_date).getTime()) /
+              (1000 * 60 * 60 * 24)
+          );
+          sessionGap = daysSinceLastSession > 21;
+        }
+
         const lowScores =
           completedSessions.length > 0 &&
           completedSessions.slice(0, 2).some((s) => {
-            const avgScore =
-              ((s.mood_rating || 0) + (s.progress_rating || 0)) / 2;
-            return avgScore < 4;
+            return (s.mood_rating || 0) < 5 || (s.progress_rating || 0) < 5;
           });
 
         // Calculate overall risk score (0-100)
         let riskScore = 0;
         const riskFactors: string[] = [];
 
-        if (cancellationRate >= 0.5) {
+        if (recentCancellations >= 2) {
           riskScore += 30;
           riskFactors.push(
-            `High cancellation rate (${Math.round(cancellationRate * 100)}%)`
+            `${recentCancellations} cancellations in last 30 days`
           );
-        } else if (cancellationRate >= 0.3) {
-          riskScore += 15;
-          riskFactors.push(
-            `Moderate cancellation rate (${Math.round(
-              cancellationRate * 100
-            )}%)`
-          );
+        }
+
+        if (recentNoShows >= 1) {
+          riskScore += 30;
+          riskFactors.push(`${recentNoShows} no-show(s) in last 30 days`);
         }
 
         if (decliningTrend) {
@@ -155,7 +153,7 @@ export async function GET() {
           riskFactors.push("Declining mood/progress scores");
         }
 
-        if (sessionGap) {
+        if (sessionGap && lastSession) {
           riskScore += 30;
           riskFactors.push(`No session in ${daysSinceLastSession} days`);
         }
@@ -178,7 +176,10 @@ export async function GET() {
           riskFactors,
           lastSessionDate: lastSession?.session_date || null,
           recentSessionCount: recentSessions.length,
-          cancellationRate: Math.round(cancellationRate * 100),
+          cancellationRate:
+            recentSessions.length > 0
+              ? Math.round((recentCancellations / recentSessions.length) * 100)
+              : 0,
         };
       })
       .filter((client) => client.riskLevel !== "low")
@@ -196,4 +197,3 @@ export async function GET() {
     );
   }
 }
-
