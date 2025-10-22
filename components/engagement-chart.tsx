@@ -9,7 +9,9 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  Legend,
 } from "recharts";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface Session {
   session_date: string;
@@ -54,37 +56,88 @@ export function EngagementChart({ sessions }: EngagementChartProps) {
       cancelled: item.cancelled,
     }));
 
+  const recentData = chartData.slice(-4);
+  const olderData = chartData.slice(-8, -4);
+  const recentAvg =
+    recentData.reduce((sum, d) => sum + d.completed, 0) / recentData.length;
+  const olderAvg =
+    olderData.reduce((sum, d) => sum + d.completed, 0) /
+    (olderData.length || 1);
+  const trend = recentAvg > olderAvg ? "up" : "down";
+  const trendPercent =
+    olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0;
+
   return (
-    <Card>
+    <Card className="transition-all duration-200 hover:shadow-md">
       <CardHeader>
-        <CardTitle>Session Trends</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Session Trends</CardTitle>
+          <div className="flex items-center gap-1 text-sm">
+            {trend === "up" ? (
+              <>
+                <TrendingUp className="w-4 h-4 text-green-600" />
+                <span className="text-green-600 font-medium">
+                  +{trendPercent.toFixed(1)}%
+                </span>
+              </>
+            ) : (
+              <>
+                <TrendingDown className="w-4 h-4 text-red-600" />
+                <span className="text-red-600 font-medium">
+                  {trendPercent.toFixed(1)}%
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Weekly session completion and cancellation rates
+        </p>
       </CardHeader>
       <CardContent>
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="week" className="text-xs" />
-              <YAxis className="text-xs" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                className="stroke-muted"
+                opacity={0.3}
+              />
+              <XAxis
+                dataKey="week"
+                className="text-xs"
+                tick={{ fill: "hsl(var(--muted-foreground))" }}
+              />
+              <YAxis
+                className="text-xs"
+                tick={{ fill: "hsl(var(--muted-foreground))" }}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
-                  borderRadius: "6px",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
+                labelStyle={{ fontWeight: 600, marginBottom: "4px" }}
               />
+              <Legend wrapperStyle={{ paddingTop: "20px" }} iconType="line" />
               <Line
                 type="monotone"
                 dataKey="completed"
                 stroke="hsl(var(--primary))"
-                strokeWidth={2}
+                strokeWidth={3}
+                dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                activeDot={{ r: 6 }}
                 name="Completed"
               />
               <Line
                 type="monotone"
                 dataKey="cancelled"
                 stroke="hsl(var(--destructive))"
-                strokeWidth={2}
+                strokeWidth={3}
+                dot={{ fill: "hsl(var(--destructive))", r: 4 }}
+                activeDot={{ r: 6 }}
                 name="Cancelled"
               />
             </LineChart>

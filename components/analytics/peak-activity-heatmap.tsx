@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
 
 interface Session {
   session_date: string;
@@ -52,12 +53,18 @@ export function PeakActivityHeatmap({ sessions }: PeakActivityHeatmapProps) {
     return "bg-primary/80";
   };
 
+  const [selectedCell, setSelectedCell] = useState<{
+    day: string;
+    hour: number;
+  } | null>(null);
+
   return (
-    <Card>
+    <Card className="transition-all duration-200 hover:shadow-md">
       <CardHeader>
         <CardTitle>Peak Activity Times</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Session frequency by day and time
+          Session frequency by day and time - {completedSessions.length} total
+          sessions
         </p>
       </CardHeader>
       <CardContent>
@@ -81,19 +88,37 @@ export function PeakActivityHeatmap({ sessions }: PeakActivityHeatmapProps) {
               <div className="w-12 text-xs font-medium">{day}</div>
               {hours.map((hour) => {
                 const count = heatmapData[day][hour];
+                const isSelected =
+                  selectedCell?.day === day && selectedCell?.hour === hour;
                 return (
                   <div
                     key={`${day}-${hour}`}
                     className={`flex-1 aspect-square rounded ${getColor(
                       count
-                    )} flex items-center justify-center text-xs font-medium transition-colors hover:ring-2 hover:ring-primary cursor-default`}
-                    title={`${day} ${hour}:00 - ${count} sessions`}>
+                    )} flex items-center justify-center text-xs font-medium transition-all duration-200 hover:ring-2 hover:ring-primary hover:scale-110 cursor-pointer ${
+                      isSelected ? "ring-2 ring-primary scale-110" : ""
+                    }`}
+                    title={`${day} ${hour}:00 - ${count} sessions`}
+                    onClick={() => setSelectedCell({ day, hour })}>
                     {count > 0 ? count : ""}
                   </div>
                 );
               })}
             </div>
           ))}
+
+          {selectedCell && (
+            <div className="mt-4 p-3 rounded-lg border bg-card/50">
+              <p className="text-sm font-medium">
+                {selectedCell.day} at {selectedCell.hour % 12 || 12}:00{" "}
+                {selectedCell.hour < 12 ? "AM" : "PM"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {heatmapData[selectedCell.day][selectedCell.hour]} sessions
+                completed
+              </p>
+            </div>
+          )}
 
           {/* Legend */}
           <div className="flex items-center justify-center gap-2 pt-4 text-xs text-muted-foreground">
@@ -112,4 +137,3 @@ export function PeakActivityHeatmap({ sessions }: PeakActivityHeatmapProps) {
     </Card>
   );
 }
-

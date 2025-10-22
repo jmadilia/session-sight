@@ -343,7 +343,8 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="relative overflow-hidden transition-all duration-200 hover:shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Completed Sessions
@@ -356,14 +357,14 @@ export default function AnalyticsPage() {
               {sessionGrowth >= 0 ? (
                 <>
                   <TrendingUp className="w-3 h-3 mr-1 text-green-600" />
-                  <span className="text-green-600">
+                  <span className="text-green-600 font-medium">
                     +{sessionGrowth.toFixed(1)}%
                   </span>
                 </>
               ) : (
                 <>
                   <TrendingDown className="w-3 h-3 mr-1 text-red-600" />
-                  <span className="text-red-600">
+                  <span className="text-red-600 font-medium">
                     {sessionGrowth.toFixed(1)}%
                   </span>
                 </>
@@ -373,7 +374,8 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden transition-all duration-200 hover:shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">New Clients</CardTitle>
             <UserPlus className="h-4 w-4 text-muted-foreground" />
@@ -384,14 +386,14 @@ export default function AnalyticsPage() {
               {newClientsGrowth >= 0 ? (
                 <>
                   <TrendingUp className="w-3 h-3 mr-1 text-green-600" />
-                  <span className="text-green-600">
+                  <span className="text-green-600 font-medium">
                     +{newClientsGrowth.toFixed(1)}%
                   </span>
                 </>
               ) : (
                 <>
                   <TrendingDown className="w-3 h-3 mr-1 text-red-600" />
-                  <span className="text-red-600">
+                  <span className="text-red-600 font-medium">
                     {newClientsGrowth.toFixed(1)}%
                   </span>
                 </>
@@ -401,7 +403,8 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden transition-all duration-200 hover:shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-16 -mt-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Avg Session Duration
@@ -418,7 +421,8 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden transition-all duration-200 hover:shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full -mr-16 -mt-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Client Retention
