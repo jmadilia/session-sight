@@ -44,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`font-sans antialiased ${plusJakartaSans.variable} ${jetBrainsMono.variable} ${crimsonPro.variable}`}>
         <ThemeProvider
