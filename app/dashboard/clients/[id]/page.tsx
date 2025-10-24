@@ -396,7 +396,7 @@ export default function ClientDetailPage() {
                       Engagement Score
                     </p>
                     <p className="text-xl font-bold">
-                      {metrics.engagement_score || "N/A"}/10
+                      {metrics.engagement_score || "N/A"}/100
                     </p>
                   </div>
                   <div>
