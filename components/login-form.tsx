@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +17,10 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Sparkles } from "lucide-react";
+
+const DEMO_EMAIL = "demo@sessionsight.com";
+const DEMO_PASSWORD = "DemoPassword123!";
 
 export function LoginForm({
   className,
@@ -38,8 +44,35 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
       router.push("/dashboard");
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
+      });
+
+      if (error) {
+        // Provide helpful error message if demo account doesn't exist
+        setError(
+          "Demo account not found. Please contact the site administrator to set up the demo account."
+        );
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -59,6 +92,40 @@ export function LoginForm({
         <CardContent>
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <p className="text-sm font-medium">Try the Demo Account</p>
+                    <p className="text-xs text-muted-foreground">
+                      Explore SessionSight with pre-populated data including 30
+                      clients, sessions, and analytics.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDemoLogin}
+                      disabled={isLoading}
+                      className="w-full sm:w-auto bg-transparent">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Login as Demo
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with your account
+                  </span>
+                </div>
+              </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
