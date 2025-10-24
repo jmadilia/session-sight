@@ -98,7 +98,7 @@ export function LoginForm({
                   <div className="flex-1 space-y-2">
                     <p className="text-sm font-medium">Try the Demo Account</p>
                     <p className="text-xs text-muted-foreground">
-                      Explore SessionSight with pre-populated data including 30
+                      Explore SessionSight with pre-populated data including 20
                       clients, sessions, and analytics.
                     </p>
                     <Button
