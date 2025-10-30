@@ -47,8 +47,10 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ClientBriefComponent } from "@/components/client-brief";
 
 type SectionId =
+  | "ai-brief"
   | "engagement"
   | "contact"
   | "statistics"
@@ -145,8 +147,10 @@ export default function ClientDetailPage() {
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isCustomizing, setIsCustomizing] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const [sections, setSections] = useState<SectionConfig[]>([
+    { id: "ai-brief", title: "AI Client Brief", visible: true, column: "left" },
     {
       id: "engagement",
       title: "Engagement Metrics",
@@ -189,6 +193,7 @@ export default function ClientDetailPage() {
   );
 
   useEffect(() => {
+    setMounted(true);
     const saved = localStorage.getItem(`client-sections-${clientId}`);
     if (saved) {
       try {
@@ -200,11 +205,13 @@ export default function ClientDetailPage() {
   }, [clientId]);
 
   useEffect(() => {
-    localStorage.setItem(
-      `client-sections-${clientId}`,
-      JSON.stringify(sections)
-    );
-  }, [sections, clientId]);
+    if (mounted) {
+      localStorage.setItem(
+        `client-sections-${clientId}`,
+        JSON.stringify(sections)
+      );
+    }
+  }, [sections, clientId, mounted]);
 
   useEffect(() => {
     async function fetchData() {
@@ -359,6 +366,14 @@ export default function ClientDetailPage() {
 
   function renderSection(sectionId: SectionId) {
     switch (sectionId) {
+      case "ai-brief":
+        return (
+          <ClientBriefComponent
+            clientId={clientId}
+            clientName={`${client.first_name} ${client.last_name}`}
+          />
+        );
+
       case "engagement":
         return (
           metrics && (
