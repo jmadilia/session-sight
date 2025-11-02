@@ -18,6 +18,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { AISessionNoteAssistant } from "@/components/ai-session-note-assistant";
 
 interface Client {
   id: string;
@@ -41,6 +42,38 @@ export function NewSessionForm({
   const [isLoading, setIsLoading] = useState(false);
   const [moodRating, setMoodRating] = useState<number>(5);
   const [progressRating, setProgressRating] = useState<number>(5);
+  const [selectedClientId, setSelectedClientId] = useState<string>(
+    preselectedClientId || ""
+  );
+  const [sessionType, setSessionType] = useState<string>("individual");
+  const [notes, setNotes] = useState<string>("");
+
+  function handleNoteGenerated(
+    content: string,
+    interventions: string[],
+    goalsAddressed: string[],
+    homework: string
+  ) {
+    let formattedNote = content;
+
+    if (interventions.length > 0) {
+      formattedNote += `\n\nInterventions Used:\n${interventions
+        .map((i) => `- ${i}`)
+        .join("\n")}`;
+    }
+
+    if (goalsAddressed.length > 0) {
+      formattedNote += `\n\nGoals Addressed:\n${goalsAddressed
+        .map((g) => `- ${g}`)
+        .join("\n")}`;
+    }
+
+    if (homework) {
+      formattedNote += `\n\nHomework Assigned:\n${homework}`;
+    }
+
+    setNotes(formattedNote);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -51,14 +84,14 @@ export function NewSessionForm({
 
     const sessionData = {
       therapist_id: therapistId,
-      client_id: formData.get("client_id") as string,
+      client_id: selectedClientId,
       session_date: new Date(
         formData.get("session_date") as string
       ).toISOString(),
       duration_minutes: Number.parseInt(
         formData.get("duration_minutes") as string
       ),
-      session_type: formData.get("session_type") as string,
+      session_type: sessionType,
       status: formData.get("status") as string,
       mood_rating: formData.get("status") === "completed" ? moodRating : null,
       progress_rating:
@@ -81,8 +114,6 @@ export function NewSessionForm({
       return;
     }
 
-    // If there are notes, create session notes
-    const notes = formData.get("notes") as string;
     if (notes && session) {
       const { error: notesError } = await supabase
         .from("session_notes")
@@ -117,6 +148,7 @@ export function NewSessionForm({
             <Select
               name="client_id"
               defaultValue={preselectedClientId}
+              onValueChange={setSelectedClientId}
               required>
               <SelectTrigger>
                 <SelectValue placeholder="Select a client" />
@@ -158,7 +190,11 @@ export function NewSessionForm({
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="session_type">Session Type *</Label>
-              <Select name="session_type" defaultValue="individual" required>
+              <Select
+                name="session_type"
+                defaultValue="individual"
+                onValueChange={setSessionType}
+                required>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -219,6 +255,16 @@ export function NewSessionForm({
         </CardContent>
       </Card>
 
+      {selectedClientId && (
+        <AISessionNoteAssistant
+          clientId={selectedClientId}
+          sessionType={sessionType}
+          moodRating={moodRating}
+          progressRating={progressRating}
+          onNoteGenerated={handleNoteGenerated}
+        />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Session Notes</CardTitle>
@@ -229,6 +275,8 @@ export function NewSessionForm({
             <Textarea
               id="notes"
               name="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="Session summary, interventions used, client responses, homework assigned..."
               rows={8}
             />
