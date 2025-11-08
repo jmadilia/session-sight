@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { LogOut, Menu, UserIcon } from "lucide-react";
+import { LogOut, Menu, UserIcon, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
@@ -38,6 +38,7 @@ const navigation = [
     icon: CalendarCheck,
   },
   { name: "Analytics", href: "/dashboard/analytics", icon: TrendingUp },
+  { name: "Organization", href: "/dashboard/organization", icon: Building2 },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
