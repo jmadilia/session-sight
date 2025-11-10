@@ -29,54 +29,35 @@ export default async function ManageMemberPage({
     redirect("/auth/login");
   }
 
-  // Get the member being managed
-  const { data: member, error: memberError } = await supabase
-    .from("organization_members")
-    .select(
-      `
-      *,
-      organizations (
-        id,
-        name
-      ),
-      therapists!organization_members_therapist_id_fkey (
-        id,
-        practice_name
-      )
-    `
-    )
-    .eq("id", memberId)
-    .single();
+  console.log("[v0] Fetching member details for therapist:", memberId);
+  const { data: memberData, error: memberError } = await supabase.rpc(
+    "get_member_details",
+    {
+      p_therapist_id: memberId,
+      p_user_id: user.id,
+    }
+  );
+  console.log("[v0] Member details result:", memberData, "Error:", memberError);
+
+  const member = memberData && memberData.length > 0 ? memberData[0] : null;
 
   if (memberError || !member) {
+    console.log("[v0] Member not found or access denied, redirecting");
     redirect("/dashboard/organization");
   }
 
-  // Get the profile of the member being managed
-  const { data: memberProfile } = await supabase
-    .from("profiles")
-    .select("id, full_name, email")
-    .eq("id", member.therapist_id)
-    .single();
-
-  // Check if current user is admin of this organization
-  const { data: currentMembership } = await supabase
-    .from("organization_members")
-    .select("role")
-    .eq("therapist_id", user.id)
-    .eq("organization_id", member.organization_id)
-    .eq("status", "active")
-    .single();
-
   const isAdmin =
-    currentMembership?.role === "owner" || currentMembership?.role === "admin";
+    member.current_user_role === "owner" ||
+    member.current_user_role === "admin";
 
   if (!isAdmin) {
+    console.log("[v0] User is not admin, redirecting");
     redirect("/dashboard/organization");
   }
 
   // Can't manage yourself
   if (member.therapist_id === user.id) {
+    console.log("[v0] Cannot manage yourself, redirecting");
     redirect("/dashboard/organization");
   }
 
@@ -107,18 +88,18 @@ export default async function ManageMemberPage({
         <CardContent className="space-y-4">
           <div>
             <p className="text-sm font-medium text-muted-foreground">Name</p>
-            <p className="text-lg">{memberProfile?.full_name || "Unknown"}</p>
+            <p className="text-lg">{member.full_name || "Unknown"}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Email</p>
-            <p className="text-lg">{memberProfile?.email || "Unknown"}</p>
+            <p className="text-lg">{member.email || "Unknown"}</p>
           </div>
-          {member.therapists?.practice_name && (
+          {member.practice_name && (
             <div>
               <p className="text-sm font-medium text-muted-foreground">
                 Practice
               </p>
-              <p className="text-lg">{member.therapists.practice_name}</p>
+              <p className="text-lg">{member.practice_name}</p>
             </div>
           )}
           <div>
@@ -138,7 +119,7 @@ export default async function ManageMemberPage({
 
       <ManageMemberForm
         memberId={member.id}
-        memberName={memberProfile?.full_name || "this member"}
+        memberName={member.full_name || "this member"}
         currentRole={member.role}
         organizationId={member.organization_id}
         isOwner={member.role === "owner"}

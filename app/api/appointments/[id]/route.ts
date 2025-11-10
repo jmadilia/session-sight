@@ -1,7 +1,11 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import { canAccessAppointment } from "@/utils/permissions";
 
-export async function GET(request: Request, { params }: any) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const supabase = await createClient();
 
   // Check authentication
@@ -14,7 +18,16 @@ export async function GET(request: Request, { params }: any) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
+
+  const hasAccess = await canAccessAppointment(user.id, id);
+
+  if (!hasAccess) {
+    return NextResponse.json(
+      { error: "Forbidden: You don't have access to this appointment" },
+      { status: 403 }
+    );
+  }
 
   // Fetch appointment with client info
   const { data: appointment, error } = await supabase
@@ -32,7 +45,6 @@ export async function GET(request: Request, { params }: any) {
     `
     )
     .eq("id", id)
-    .eq("therapist_id", user.id)
     .single();
 
   if (error) {
@@ -42,7 +54,10 @@ export async function GET(request: Request, { params }: any) {
   return NextResponse.json({ appointment });
 }
 
-export async function PATCH(request: Request, { params }: any) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const supabase = await createClient();
 
   // Check authentication
@@ -55,7 +70,17 @@ export async function PATCH(request: Request, { params }: any) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
+
+  const hasAccess = await canAccessAppointment(user.id, id);
+
+  if (!hasAccess) {
+    return NextResponse.json(
+      { error: "Forbidden: You don't have access to this appointment" },
+      { status: 403 }
+    );
+  }
+
   const body = await request.json();
 
   // Update appointment
@@ -63,7 +88,6 @@ export async function PATCH(request: Request, { params }: any) {
     .from("appointments")
     .update(body)
     .eq("id", id)
-    .eq("therapist_id", user.id)
     .select()
     .single();
 
@@ -73,4 +97,3 @@ export async function PATCH(request: Request, { params }: any) {
 
   return NextResponse.json({ appointment });
 }
-

@@ -61,8 +61,6 @@ export function ManageMemberForm({
     setError(null);
 
     try {
-      console.log("[v0] Updating member role:", { memberId, role });
-
       const response = await fetch("/api/organization/members/update-role", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,8 +68,6 @@ export function ManageMemberForm({
       });
 
       const data = await response.json();
-
-      console.log("[v0] Update role response:", data);
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to update role");
@@ -92,8 +88,6 @@ export function ManageMemberForm({
     setError(null);
 
     try {
-      console.log("[v0] Removing member:", memberId);
-
       const response = await fetch("/api/organization/members/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -101,8 +95,6 @@ export function ManageMemberForm({
       });
 
       const data = await response.json();
-
-      console.log("[v0] Remove member response:", data);
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to remove member");

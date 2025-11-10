@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import { getAccessibleTherapistIds } from "@/utils/permissions";
 
 export async function GET() {
   const supabase = await createClient();
@@ -14,23 +15,24 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Fetch analytics data
+  const accessibleTherapistIds = await getAccessibleTherapistIds(user.id);
+
   const [clientsResult, sessionsResult, appointmentsResult] = await Promise.all(
     [
       supabase
         .from("clients")
         .select("id, status, created_at")
-        .eq("therapist_id", user.id),
+        .in("therapist_id", accessibleTherapistIds),
       supabase
         .from("sessions")
         .select(
           "id, session_type, status, session_date, mood_rating, progress_rating"
         )
-        .eq("therapist_id", user.id),
+        .in("therapist_id", accessibleTherapistIds),
       supabase
         .from("appointments")
         .select("id, status, appointment_date")
-        .eq("therapist_id", user.id),
+        .in("therapist_id", accessibleTherapistIds),
     ]
   );
 
@@ -115,4 +117,3 @@ export async function GET() {
     engagementByMonth,
   });
 }
-

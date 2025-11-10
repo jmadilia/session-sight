@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, CalendarIcon, Search } from "lucide-react";
@@ -9,7 +8,6 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { AppointmentsFilter } from "@/components/appointments-filter";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
 import { Calendar } from "lucide-react";
 
 type Appointment = {
@@ -25,7 +23,6 @@ type Appointment = {
 };
 
 export default function AppointmentsPage() {
-  const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<
     Appointment[]
@@ -37,39 +34,18 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     async function fetchAppointments() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const response = await fetch("/api/appointments");
+      const data = await response.json();
 
-      if (!user) {
-        router.push("/auth/login");
-        return;
-      }
-
-      const { data } = await supabase
-        .from("appointments")
-        .select(
-          `
-          *,
-          clients (
-            first_name,
-            last_name
-          )
-        `
-        )
-        .eq("therapist_id", user.id)
-        .order("appointment_date", { ascending: true });
-
-      if (data) {
-        setAppointments(data);
-        setFilteredAppointments(data);
+      if (data.appointments) {
+        setAppointments(data.appointments);
+        setFilteredAppointments(data.appointments);
       }
       setLoading(false);
     }
 
     fetchAppointments();
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     let filtered = appointments;
@@ -192,7 +168,7 @@ export default function AppointmentsPage() {
                       <div className="flex items-start gap-3">
                         <CalendarIcon className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                         <div className="min-w-0 flex-1">
-                          <h3 className="text-base font-medium truncate">
+                          <h3 className="font-semibold truncate">
                             {appt.clients?.first_name} {appt.clients?.last_name}
                           </h3>
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
@@ -284,7 +260,7 @@ export default function AppointmentsPage() {
                     key={appt.id}
                     className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 border rounded-lg opacity-60">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-medium truncate">
+                      <h3 className="font-semibold truncate">
                         {appt.clients?.first_name} {appt.clients?.last_name}
                       </h3>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">

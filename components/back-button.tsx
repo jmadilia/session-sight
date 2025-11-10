@@ -17,7 +17,6 @@ export function BackButton({ href, label }: BackButtonProps) {
       variant="ghost"
       size="icon"
       onClick={() => {
-        console.log("[v0] Navigating to:", href);
         router.push(href);
       }}
       aria-label={label || "Go back"}>
@@ -25,4 +24,3 @@ export function BackButton({ href, label }: BackButtonProps) {
     </Button>
   );
 }
-

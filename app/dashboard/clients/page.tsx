@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,21 +27,16 @@ export default function ClientsPage() {
 
   useEffect(() => {
     const fetchClients = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      console.log("[v0] Fetching clients via API route");
 
-      if (!user) return;
+      const response = await fetch("/api/clients");
+      const data = await response.json();
 
-      const { data } = await supabase
-        .from("clients")
-        .select("*")
-        .eq("therapist_id", user.id)
-        .order("last_name", { ascending: true });
+      console.log("[v0] API response:", data);
+      console.log("[v0] Clients returned:", data.clients?.length || 0);
 
-      setClients(data || []);
-      setFilteredClients(data || []);
+      setClients(data.clients || []);
+      setFilteredClients(data.clients || []);
       setLoading(false);
     };
 

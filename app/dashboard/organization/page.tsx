@@ -12,6 +12,26 @@ import { Users, Settings, UserPlus, Building2 } from "lucide-react";
 import Link from "next/link";
 import { InvitationCard } from "@/components/invitation-card";
 
+type MemberProfile = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+};
+
+type MemberTherapist = {
+  id: string;
+  practice_name: string | null;
+  specialization: string | null;
+  phone: string | null;
+};
+
+type OrganizationMember = {
+  id: string;
+  therapist_id: string;
+  role: string;
+  status: string;
+};
+
 export default async function OrganizationPage() {
   const supabase = await createClient();
 
@@ -23,52 +43,38 @@ export default async function OrganizationPage() {
     redirect("/auth/login");
   }
 
-  console.log("[v0] Current user ID:", user.id);
+  console.log("[v0] Fetching pending invitations for user:", user.id);
+  const { data: pendingInvitationsData, error: invitationsError } =
+    await supabase.rpc("get_pending_invitations", {
+      p_user_id: user.id,
+    });
+  console.log(
+    "[v0] Pending invitations result:",
+    pendingInvitationsData,
+    "Error:",
+    invitationsError
+  );
 
-  const { data: pendingInvitations, error: invitationsError } = await supabase
-    .from("organization_members")
-    .select(
-      `
-      *,
-      organizations (
-        id,
-        name,
-        description,
-        logo_url
-      )
-    `
-    )
-    .eq("therapist_id", user.id)
-    .eq("status", "pending");
+  const pendingInvitations = pendingInvitationsData || [];
 
-  console.log("[v0] Pending invitations query result:", pendingInvitations);
-  console.log("[v0] Pending invitations error:", invitationsError);
+  console.log("[v0] Fetching user context for user:", user.id);
+  const { data: contextData, error: contextError } = await supabase.rpc(
+    "get_user_organization_context",
+    {
+      p_user_id: user.id,
+    }
+  );
+  console.log("[v0] User context result:", contextData, "Error:", contextError);
 
-  // Check if user is part of an organization
-  const { data: membership, error: membershipError } = await supabase
-    .from("organization_members")
-    .select(
-      `
-      *,
-      organizations (
-        id,
-        name,
-        description,
-        logo_url,
-        created_at
-      )
-    `
-    )
-    .eq("therapist_id", user.id)
-    .eq("status", "active")
-    .maybeSingle();
+  const userContext =
+    contextData && contextData.length > 0 ? contextData[0] : null;
+  console.log("[v0] Parsed user context:", userContext);
 
-  console.log("[v0] Active membership:", membership);
+  const validInvitations = pendingInvitations.filter(
+    (inv: any) => inv.organization_name !== null
+  );
 
-  const validInvitations =
-    pendingInvitations?.filter((inv) => inv.organizations !== null) || [];
-
-  if (validInvitations.length > 0 && !membership) {
+  if (validInvitations.length > 0 && !userContext?.organization_id) {
     return (
       <div className="space-y-6">
         <div>
@@ -81,7 +87,7 @@ export default async function OrganizationPage() {
         </div>
 
         <div className="grid gap-4 max-w-2xl">
-          {validInvitations.map((invitation) => (
+          {validInvitations.map((invitation: any) => (
             <InvitationCard key={invitation.id} invitation={invitation} />
           ))}
         </div>
@@ -107,7 +113,7 @@ export default async function OrganizationPage() {
   }
 
   // If no organization, show create organization UI
-  if (!membership) {
+  if (!userContext?.organization_id) {
     return (
       <div className="space-y-6">
         <div>
@@ -150,42 +156,65 @@ export default async function OrganizationPage() {
     );
   }
 
-  const organization = membership.organizations;
+  console.log("[v0] Fetching organization:", userContext.organization_id);
+  const { data: orgData, error: orgError } = await supabase.rpc(
+    "get_organization_details",
+    {
+      p_user_id: user.id,
+    }
+  );
+  console.log("[v0] Organization result:", orgData, "Error:", orgError);
 
-  console.log("[v0] Organization data:", organization);
+  const organization = orgData && orgData.length > 0 ? orgData[0] : null;
 
-  const { data: members, error: membersError } = await supabase
-    .from("organization_members")
-    .select(
-      `
-      *,
-      therapists!organization_members_therapist_id_fkey (
-        id,
-        practice_name,
-        specialization,
-        phone
-      )
-    `
-    )
-    .eq("organization_id", organization.id)
-    .eq("status", "active")
-    .order("joined_at", { ascending: true });
+  if (!organization) {
+    return <div>Organization not found</div>;
+  }
 
-  console.log("[v0] Members query result:", members);
-  console.log("[v0] Members query error:", membersError);
+  console.log("[v0] Fetching organization therapists");
+  const { data: membersData, error: membersError } = await supabase.rpc(
+    "get_organization_therapists",
+    {
+      p_org_id: userContext.organization_id,
+    }
+  );
+  console.log("[v0] Members result:", membersData, "Error:", membersError);
 
-  const therapistIds = members?.map((m) => m.therapist_id) || [];
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, full_name, email, avatar_url")
-    .in("id", therapistIds);
+  const members = membersData || [];
 
-  const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+  console.log("[v0] Members data:", members);
 
-  console.log("[v0] Number of members:", members?.length || 0);
-  console.log("[v0] Profiles fetched:", profiles?.length || 0);
+  const therapistIds = members.map((m: any) => m.therapist_id);
 
-  const isAdmin = membership.role === "owner" || membership.role === "admin";
+  console.log("[v0] Therapist IDs:", therapistIds);
+
+  const { data: profiles } = await supabase.rpc(
+    "get_organization_member_profiles",
+    {
+      p_therapist_ids: therapistIds,
+    }
+  );
+
+  console.log("[v0] Profiles fetched:", profiles);
+
+  const profileMap = new Map<string, MemberProfile>(
+    profiles?.map((p: MemberProfile) => [p.id, p]) || []
+  );
+
+  const { data: therapists } = await supabase.rpc(
+    "get_organization_member_therapists",
+    {
+      p_therapist_ids: therapistIds,
+    }
+  );
+
+  console.log("[v0] Therapists fetched:", therapists);
+
+  const therapistMap = new Map<string, MemberTherapist>(
+    therapists?.map((t: MemberTherapist) => [t.id, t]) || []
+  );
+
+  const isAdmin = userContext.role === "owner" || userContext.role === "admin";
 
   return (
     <div className="space-y-6">
@@ -227,7 +256,7 @@ export default async function OrganizationPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold capitalize">
-              {membership.role}
+              {userContext.role}
             </div>
             <p className="text-xs text-muted-foreground">
               In this organization
@@ -242,7 +271,7 @@ export default async function OrganizationPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Date(membership.joined_at).toLocaleDateString("en-US", {
+              {new Date(userContext.joined_at).toLocaleDateString("en-US", {
                 month: "short",
                 year: "numeric",
               })}
@@ -279,8 +308,9 @@ export default async function OrganizationPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {members?.map((member) => {
+            {members?.map((member: any) => {
               const profile = profileMap.get(member.therapist_id);
+              const therapist = therapistMap.get(member.therapist_id);
               return (
                 <div
                   key={member.id}
@@ -288,7 +318,7 @@ export default async function OrganizationPage() {
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center text-white font-semibold">
                       {profile?.full_name?.charAt(0) ||
-                        member.therapists?.practice_name?.charAt(0) ||
+                        therapist?.practice_name?.charAt(0) ||
                         "?"}
                     </div>
                     <div>
@@ -300,9 +330,9 @@ export default async function OrganizationPage() {
                           {profile.email}
                         </p>
                       )}
-                      {member.therapists?.practice_name && (
+                      {therapist?.practice_name && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Practice: {member.therapists.practice_name}
+                          Practice: {therapist.practice_name}
                         </p>
                       )}
                     </div>
@@ -314,7 +344,7 @@ export default async function OrganizationPage() {
                     {isAdmin && member.therapist_id !== user.id && (
                       <Button variant="outline" size="sm" asChild>
                         <Link
-                          href={`/dashboard/organization/members/${member.id}`}>
+                          href={`/dashboard/organization/members/${member.therapist_id}`}>
                           Manage
                         </Link>
                       </Button>

@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import { getAccessibleTherapistIds } from "@/utils/permissions";
 
 export async function GET() {
   const supabase = await createClient();
@@ -15,6 +16,8 @@ export async function GET() {
   }
 
   try {
+    const accessibleTherapistIds = await getAccessibleTherapistIds(user.id);
+
     // Get all active clients with their recent sessions and appointments
     const { data: clients, error: clientsError } = await supabase
       .from("clients")
@@ -39,7 +42,7 @@ export async function GET() {
         )
       `
       )
-      .eq("therapist_id", user.id)
+      .in("therapist_id", accessibleTherapistIds)
       .eq("status", "active");
 
     if (clientsError) throw clientsError;

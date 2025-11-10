@@ -31,7 +31,6 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
 
   const handleAccept = async () => {
     setIsLoading(true);
-    console.log("[v0] Accepting invitation:", invitation.id);
 
     try {
       const response = await fetch("/api/invitations/accept", {
@@ -40,9 +39,7 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
         body: JSON.stringify({ invitationId: invitation.id }),
       });
 
-      console.log("[v0] Accept response status:", response.status);
       const data = await response.json();
-      console.log("[v0] Accept response data:", data);
 
       if (response.ok) {
         router.refresh();
@@ -59,7 +56,6 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
 
   const handleDecline = async () => {
     setIsLoading(true);
-    console.log("[v0] Declining invitation:", invitation.id);
 
     try {
       const response = await fetch("/api/invitations/decline", {
@@ -68,9 +64,7 @@ export function InvitationCard({ invitation }: InvitationCardProps) {
         body: JSON.stringify({ invitationId: invitation.id }),
       });
 
-      console.log("[v0] Decline response status:", response.status);
       const data = await response.json();
-      console.log("[v0] Decline response data:", data);
 
       if (response.ok) {
         router.refresh();

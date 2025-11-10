@@ -71,7 +71,6 @@ export default async function TreatmentPlanDetailsPage({ params }: PageProps) {
   );
 
   if (!plan) {
-    console.log("[v0] No plan found, redirecting to treatment plans list");
     redirect(`/dashboard/clients/${id}/treatment-plans`);
   }
 
@@ -243,4 +242,3 @@ export default async function TreatmentPlanDetailsPage({ params }: PageProps) {
     </div>
   );
 }
-

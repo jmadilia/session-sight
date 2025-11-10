@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getAccessibleTherapistIds } from "@/utils/permissions";
 
 export default async function AtRiskClientsPage() {
   const supabase = await createClient();
@@ -15,6 +16,8 @@ export default async function AtRiskClientsPage() {
   if (!user) {
     redirect("/auth/login");
   }
+
+  const accessibleTherapistIds = await getAccessibleTherapistIds(user.id);
 
   // Get all active clients with their recent sessions and appointments
   const { data: clients, error: clientsError } = await supabase
@@ -40,7 +43,7 @@ export default async function AtRiskClientsPage() {
       )
     `
     )
-    .eq("therapist_id", user.id)
+    .in("therapist_id", accessibleTherapistIds)
     .eq("status", "active");
 
   // Calculate risk factors for each client
@@ -48,6 +51,10 @@ export default async function AtRiskClientsPage() {
     ?.map((client) => {
       const sessions = client.sessions || [];
       const appointments = client.appointments || [];
+
+      console.log(
+        `[v0] Client ${client.first_name} ${client.last_name}: ${sessions.length} sessions`
+      );
 
       // Calculate risk factors
       const recentSessions = sessions
@@ -69,6 +76,10 @@ export default async function AtRiskClientsPage() {
       const recentNoShows = recentSessions.filter(
         (s) => s.status === "no-show"
       ).length;
+
+      console.log(
+        `[v0] ${client.first_name}: ${recentCancellations} cancellations, ${recentNoShows} no-shows in last 30 days`
+      );
 
       // Risk Factor 2: Declining mood/progress scores
       const completedSessions = sessions
@@ -158,6 +169,10 @@ export default async function AtRiskClientsPage() {
         riskScore += 15;
         riskFactors.push("Recent low mood/progress scores");
       }
+
+      console.log(
+        `[v0] ${client.first_name}: Risk score ${riskScore}, factors: ${riskFactors.length}`
+      );
 
       // Determine risk level
       let riskLevel: "high" | "medium" | "low" = "low";

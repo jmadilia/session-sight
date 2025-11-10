@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import { Plus, Search, FileText } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { SessionsFilter } from "@/components/sessions-filter";
-import { useRouter } from "next/navigation";
 
 type Session = {
   id: string;
@@ -26,7 +24,6 @@ type Session = {
 };
 
 export default function SessionsPage() {
-  const router = useRouter();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<Session[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,39 +34,18 @@ export default function SessionsPage() {
 
   useEffect(() => {
     async function fetchSessions() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const response = await fetch("/api/sessions");
+      const data = await response.json();
 
-      if (!user) {
-        router.push("/auth/login");
-        return;
-      }
-
-      const { data } = await supabase
-        .from("sessions")
-        .select(
-          `
-          *,
-          clients (
-            first_name,
-            last_name
-          )
-        `
-        )
-        .eq("therapist_id", user.id)
-        .order("session_date", { ascending: false });
-
-      if (data) {
-        setSessions(data);
-        setFilteredSessions(data);
+      if (data.sessions) {
+        setSessions(data.sessions);
+        setFilteredSessions(data.sessions);
       }
       setLoading(false);
     }
 
     fetchSessions();
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     let filtered = sessions;

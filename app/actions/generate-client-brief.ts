@@ -108,8 +108,6 @@ export async function generateClientBrief(
       metrics
     );
 
-    console.log("[v0] Generating client brief with AI...");
-
     const { object } = await generateObject({
       model: openai("gpt-4o-mini"),
       schema: clientBriefSchema,
@@ -119,8 +117,6 @@ ${context}
 
 Provide actionable insights, identify patterns, and suggest areas of focus. Be professional, empathetic, and clinically relevant.`,
     });
-
-    console.log("[v0] Client brief generated successfully");
 
     return { success: true, brief: object };
   } catch (error) {
@@ -208,4 +204,3 @@ Recent No-Shows: ${latestMetric.no_show_count}
 
   return context;
 }
-

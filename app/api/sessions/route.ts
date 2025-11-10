@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import { getAccessibleTherapistIds } from "@/utils/permissions";
 
 export async function GET() {
   const supabase = await createClient();
@@ -14,7 +15,8 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Fetch sessions with client info
+  const accessibleTherapistIds = await getAccessibleTherapistIds(user.id);
+
   const { data: sessions, error } = await supabase
     .from("sessions")
     .select(
@@ -27,7 +29,7 @@ export async function GET() {
       )
     `
     )
-    .eq("therapist_id", user.id)
+    .in("therapist_id", accessibleTherapistIds)
     .order("session_date", { ascending: false });
 
   if (error) {
@@ -83,4 +85,3 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ session }, { status: 201 });
 }
-

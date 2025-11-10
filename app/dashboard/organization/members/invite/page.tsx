@@ -13,8 +13,6 @@ export default async function InviteMemberPage() {
     redirect("/auth/login");
   }
 
-  console.log("[v0] Fetching membership for user:", user.id);
-
   // Check if user is part of an organization and has admin/owner role
   const { data: membership, error: membershipError } = await supabase
     .from("organization_members")
@@ -31,9 +29,6 @@ export default async function InviteMemberPage() {
     .eq("therapist_id", user.id)
     .eq("status", "active")
     .single();
-
-  console.log("[v0] Membership result:", membership);
-  console.log("[v0] Membership error:", membershipError);
 
   if (!membership || membershipError) {
     redirect("/dashboard/organization");
@@ -52,7 +47,6 @@ export default async function InviteMemberPage() {
   } | null;
 
   if (!organization) {
-    console.log("[v0] No organization data found in membership");
     redirect("/dashboard/organization");
   }
 
