@@ -8,6 +8,8 @@ import { Plus, Search, FileText } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { SessionsFilter } from "@/components/sessions-filter";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 type Session = {
   id: string;
@@ -24,6 +26,8 @@ type Session = {
 };
 
 export default function SessionsPage() {
+  const router = useRouter();
+  const { toast } = useToast();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<Session[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,8 +35,35 @@ export default function SessionsPage() {
   const [sessionTypeFilter, setSessionTypeFilter] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [loading, setLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
+    async function checkPermissions() {
+      const response = await fetch("/api/check-permissions");
+      const data = await response.json();
+
+      if (data.role === "assistant") {
+        toast({
+          title: "Access Restricted",
+          description:
+            "Assistants do not have permission to view session notes and details.",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1500);
+        return;
+      }
+
+      setHasAccess(true);
+    }
+
+    checkPermissions();
+  }, [router, toast]);
+
+  useEffect(() => {
+    if (!hasAccess) return;
+
     async function fetchSessions() {
       const response = await fetch("/api/sessions");
       const data = await response.json();
@@ -45,7 +76,7 @@ export default function SessionsPage() {
     }
 
     fetchSessions();
-  }, []);
+  }, [hasAccess]);
 
   useEffect(() => {
     let filtered = sessions;
@@ -97,7 +128,7 @@ export default function SessionsPage() {
     setDateRange({ start: "", end: "" });
   };
 
-  if (loading) {
+  if (!hasAccess || loading) {
     return <div>Loading...</div>;
   }
 

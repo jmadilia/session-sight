@@ -226,11 +226,20 @@ export default function ClientDetailPage() {
         return;
       }
 
+      const accessResponse = await fetch(
+        `/api/clients/${clientId}/check-access`
+      );
+      const { hasAccess } = await accessResponse.json();
+
+      if (!hasAccess) {
+        router.push("/dashboard/clients");
+        return;
+      }
+
       const { data: clientData } = await supabase
         .from("clients")
         .select("*")
         .eq("id", clientId)
-        .eq("therapist_id", user.id)
         .single();
 
       if (!clientData) {
@@ -411,7 +420,7 @@ export default function ClientDetailPage() {
                       Engagement Score
                     </p>
                     <p className="text-xl font-bold">
-                      {metrics.engagement_score || "N/A"}/100
+                      {metrics.engagement_score || "N/A"}/10
                     </p>
                   </div>
                   <div>

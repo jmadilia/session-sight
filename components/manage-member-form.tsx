@@ -35,19 +35,30 @@ interface ManageMemberFormProps {
   memberId: string;
   memberName: string;
   currentRole: string;
+  currentSupervisedBy: string | null;
   organizationId: string;
   isOwner: boolean;
+  availableSupervisors: Array<{
+    therapist_id: string;
+    full_name: string;
+    email: string;
+  }>;
 }
 
 export function ManageMemberForm({
   memberId,
   memberName,
   currentRole,
+  currentSupervisedBy,
   organizationId,
   isOwner,
+  availableSupervisors,
 }: ManageMemberFormProps) {
   const router = useRouter();
   const [role, setRole] = useState(currentRole);
+  const [supervisedBy, setSupervisedBy] = useState<string>(
+    currentSupervisedBy || "none"
+  );
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +72,8 @@ export function ManageMemberForm({
     setError(null);
 
     try {
+      console.log("[v0] Updating member role:", { memberId, role });
+
       const response = await fetch("/api/organization/members/update-role", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -68,6 +81,8 @@ export function ManageMemberForm({
       });
 
       const data = await response.json();
+
+      console.log("[v0] Update role response:", data);
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to update role");
@@ -83,11 +98,57 @@ export function ManageMemberForm({
     }
   };
 
+  const handleUpdateSupervisor = async () => {
+    const newSupervisedBy = supervisedBy === "none" ? null : supervisedBy;
+    if (newSupervisedBy === currentSupervisedBy) {
+      return;
+    }
+
+    setIsUpdating(true);
+    setError(null);
+
+    try {
+      console.log("[v0] Updating supervisor assignment:", {
+        memberId,
+        supervisedBy: newSupervisedBy,
+      });
+
+      const response = await fetch(
+        "/api/organization/members/update-supervisor",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ memberId, supervisedBy: newSupervisedBy }),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log("[v0] Update supervisor response:", data);
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update supervisor");
+      }
+
+      router.push("/dashboard/organization");
+      router.refresh();
+    } catch (err) {
+      console.error("[v0] Error updating supervisor:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to update supervisor"
+      );
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const handleRemoveMember = async () => {
     setIsRemoving(true);
     setError(null);
 
     try {
+      console.log("[v0] Removing member:", memberId);
+
       const response = await fetch("/api/organization/members/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -95,6 +156,8 @@ export function ManageMemberForm({
       });
 
       const data = await response.json();
+
+      console.log("[v0] Remove member response:", data);
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to remove member");
@@ -109,6 +172,9 @@ export function ManageMemberForm({
       setIsRemoving(false);
     }
   };
+
+  const showSupervisorAssignment =
+    role === "therapist" && availableSupervisors.length > 0;
 
   return (
     <div className="space-y-4">
@@ -161,6 +227,57 @@ export function ManageMemberForm({
           </Button>
         </CardContent>
       </Card>
+
+      {showSupervisorAssignment && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Supervisor Assignment</CardTitle>
+            <CardDescription>
+              Assign a supervisor to oversee this therapist
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="supervisor">Assigned Supervisor</Label>
+              <Select value={supervisedBy} onValueChange={setSupervisedBy}>
+                <SelectTrigger id="supervisor">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Supervisor</SelectItem>
+                  {availableSupervisors.map((supervisor) => (
+                    <SelectItem
+                      key={supervisor.therapist_id}
+                      value={supervisor.therapist_id}>
+                      {supervisor.full_name || supervisor.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Supervisors can view and manage data for therapists they
+                oversee.
+              </p>
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            )}
+
+            <Button
+              onClick={handleUpdateSupervisor}
+              disabled={
+                isUpdating ||
+                (supervisedBy === "none" ? null : supervisedBy) ===
+                  currentSupervisedBy ||
+                isOwner
+              }
+              className="w-full">
+              {isUpdating ? "Updating..." : "Update Supervisor"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-red-200 dark:border-red-900">
         <CardHeader>

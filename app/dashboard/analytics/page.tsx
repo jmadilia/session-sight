@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EngagementChart } from "@/components/engagement-chart";
@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 type DateRange = "7d" | "30d" | "90d" | "custom";
 
 export default function AnalyticsPage() {
+  const router = useRouter();
   const [sessions, setSessions] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -37,38 +38,55 @@ export default function AnalyticsPage() {
   const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
   const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    async function checkPermissions() {
+      const response = await fetch("/api/check-permissions");
+      const data = await response.json();
+
+      if (data.role === "assistant") {
+        toast({
+          title: "Access Restricted",
+          description:
+            "Assistants do not have permission to view analytics and reports.",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1500);
+        return;
+      }
+
+      setHasAccess(true);
+    }
+
+    checkPermissions();
+  }, [router, toast]);
+
+  useEffect(() => {
+    if (!hasAccess) return;
     fetchData();
-  }, []);
+  }, [hasAccess]);
 
   async function fetchData() {
-    const supabase = createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const [sessionsResult, clientsResult, appointmentsResult] =
+    const [sessionsResponse, clientsResponse, appointmentsResponse] =
       await Promise.all([
-        supabase
-          .from("sessions")
-          .select("*")
-          .eq("therapist_id", user.id)
-          .order("session_date", { ascending: true }),
-        supabase.from("clients").select("*").eq("therapist_id", user.id),
-        supabase
-          .from("appointments")
-          .select("*")
-          .eq("therapist_id", user.id)
-          .order("appointment_date", { ascending: true }),
+        fetch("/api/sessions"),
+        fetch("/api/clients"),
+        fetch("/api/appointments"),
       ]);
 
-    setSessions(sessionsResult.data || []);
-    setClients(clientsResult.data || []);
-    setAppointments(appointmentsResult.data || []);
+    const [sessionsData, clientsData, appointmentsData] = await Promise.all([
+      sessionsResponse.json(),
+      clientsResponse.json(),
+      appointmentsResponse.json(),
+    ]);
+
+    setSessions(sessionsData.sessions || []);
+    setClients(clientsData.clients || []);
+    setAppointments(appointmentsData.appointments || []);
     setLoading(false);
   }
 
@@ -303,7 +321,7 @@ export default function AnalyticsPage() {
     }
   };
 
-  if (loading) {
+  if (!hasAccess || loading) {
     return (
       <div className="flex items-center justify-center h-96">
         Loading analytics...

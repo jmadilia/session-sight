@@ -13,42 +13,73 @@ export default async function InviteMemberPage() {
     redirect("/auth/login");
   }
 
-  // Check if user is part of an organization and has admin/owner role
-  const { data: membership, error: membershipError } = await supabase
-    .from("organization_members")
-    .select(
-      `
-      *,
-      organizations (
-        id,
-        name,
-        description
-      )
-    `
-    )
-    .eq("therapist_id", user.id)
-    .eq("status", "active")
-    .single();
+  console.log("[v0] INVITE PAGE - Fetching user context for user:", user.id);
 
-  if (!membership || membershipError) {
+  const { data: contextData, error: contextError } = await supabase.rpc(
+    "get_user_organization_context",
+    {
+      p_user_id: user.id,
+    }
+  );
+
+  console.log("[v0] INVITE PAGE - User context result:", contextData);
+  console.log("[v0] INVITE PAGE - User context error:", contextError);
+
+  if (contextError) {
+    console.log("[v0] INVITE PAGE - Context error, redirecting");
     redirect("/dashboard/organization");
   }
 
-  const isAdmin = membership.role === "owner" || membership.role === "admin";
+  if (!contextData || !Array.isArray(contextData) || contextData.length === 0) {
+    console.log("[v0] INVITE PAGE - No context data, redirecting");
+    redirect("/dashboard/organization");
+  }
+
+  const context = contextData[0];
+
+  console.log("[v0] INVITE PAGE - Parsed context:", context);
+  console.log("[v0] INVITE PAGE - User role:", context.role);
+  console.log("[v0] INVITE PAGE - Organization ID:", context.organization_id);
+
+  const isAdmin = context.role === "owner" || context.role === "admin";
 
   if (!isAdmin) {
+    console.log("[v0] INVITE PAGE - Not admin, redirecting");
     redirect("/dashboard/organization");
   }
 
-  const organization = membership.organizations as {
-    id: string;
-    name: string;
-    description: string | null;
-  } | null;
+  // Fetch organization details
+  console.log(
+    "[v0] INVITE PAGE - Fetching organization details for:",
+    context.organization_id
+  );
 
-  if (!organization) {
+  const { data: orgData, error: orgError } = await supabase.rpc(
+    "get_organization_details",
+    {
+      p_user_id: user.id,
+    }
+  );
+
+  console.log("[v0] INVITE PAGE - Organization result:", orgData);
+  console.log("[v0] INVITE PAGE - Organization error:", orgError);
+
+  if (orgError) {
+    console.log("[v0] INVITE PAGE - Organization error:", orgError.message);
     redirect("/dashboard/organization");
   }
+
+  if (!orgData || !Array.isArray(orgData) || orgData.length === 0) {
+    console.log("[v0] INVITE PAGE - No organization data found");
+    redirect("/dashboard/organization");
+  }
+
+  const organization = orgData[0];
+
+  console.log(
+    "[v0] INVITE PAGE - Successfully loaded, organization:",
+    organization.name
+  );
 
   return (
     <div className="space-y-6">

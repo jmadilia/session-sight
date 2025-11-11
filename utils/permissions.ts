@@ -34,6 +34,7 @@ const rolePermissions: Record<Role, Permission[]> = {
     "view_all_analytics",
     "schedule_appointments",
     "view_all_appointments",
+    "view_assigned_appointments",
   ],
   admin: [
     "manage_organization",
@@ -46,6 +47,7 @@ const rolePermissions: Record<Role, Permission[]> = {
     "view_all_analytics",
     "schedule_appointments",
     "view_all_appointments",
+    "view_assigned_appointments",
   ],
   supervisor: [
     "view_all_clients",
@@ -53,6 +55,7 @@ const rolePermissions: Record<Role, Permission[]> = {
     "view_team_analytics",
     "schedule_appointments",
     "view_all_appointments",
+    "view_assigned_appointments",
   ],
   therapist: [
     "view_assigned_clients",
@@ -190,11 +193,21 @@ export async function getAccessibleTherapistIds(
     );
     console.log("[v0] getAccessibleTherapistIds - supervisor error:", error);
 
-    if (error || !members || members.length === 0) {
-      return [userId];
-    }
+    const supervisedIds =
+      error || !members
+        ? []
+        : members.map((m: { therapist_id: string }) => m.therapist_id);
+    const allAccessibleIds = [
+      userId,
+      ...supervisedIds.filter((id: string) => id !== userId),
+    ];
 
-    return members.map((m: { therapist_id: string }) => m.therapist_id);
+    console.log(
+      "[v0] getAccessibleTherapistIds - supervisor accessible IDs:",
+      allAccessibleIds
+    );
+
+    return allAccessibleIds;
   }
 
   // Therapists and Assistants can only see their own data

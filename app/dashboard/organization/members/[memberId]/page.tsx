@@ -61,6 +61,68 @@ export default async function ManageMemberPage({
     redirect("/dashboard/organization");
   }
 
+  console.log(
+    "[v0] Fetching supervisors for organization:",
+    member.organization_id
+  );
+  const { data: supervisorsData, error: supervisorsError } = await supabase.rpc(
+    "get_organization_therapists",
+    {
+      p_org_id: member.organization_id,
+    }
+  );
+  console.log(
+    "[v0] Supervisors data:",
+    supervisorsData,
+    "Error:",
+    supervisorsError
+  );
+
+  const supervisors =
+    supervisorsData?.filter(
+      (m: any) =>
+        m.role === "supervisor" && m.therapist_id !== member.therapist_id
+    ) || [];
+
+  console.log("[v0] Filtered supervisors:", supervisors);
+
+  const supervisorIds = supervisors.map((s: any) => s.therapist_id);
+
+  let availableSupervisors: Array<{
+    therapist_id: string;
+    full_name: string;
+    email: string;
+  }> = [];
+
+  if (supervisorIds.length > 0) {
+    const { data: profilesData, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .in("id", supervisorIds);
+
+    console.log(
+      "[v0] Supervisor profiles:",
+      profilesData,
+      "Error:",
+      profilesError
+    );
+
+    const profilesMap = new Map(
+      (profilesData || []).map((profile) => [profile.id, profile])
+    );
+
+    availableSupervisors = supervisors.map((supervisor: any) => ({
+      therapist_id: supervisor.therapist_id,
+      full_name: profilesMap.get(supervisor.therapist_id)?.full_name || "",
+      email: profilesMap.get(supervisor.therapist_id)?.email || "",
+    }));
+  }
+
+  console.log(
+    "[v0] Available supervisors with profiles:",
+    availableSupervisors
+  );
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -121,8 +183,10 @@ export default async function ManageMemberPage({
         memberId={member.id}
         memberName={member.full_name || "this member"}
         currentRole={member.role}
+        currentSupervisedBy={member.supervised_by}
         organizationId={member.organization_id}
         isOwner={member.role === "owner"}
+        availableSupervisors={availableSupervisors}
       />
     </div>
   );
