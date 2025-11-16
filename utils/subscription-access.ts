@@ -16,23 +16,52 @@ export async function getOrganizationSubscription(): Promise<Organization | null
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return null;
+  if (!user) {
+    console.log("[v0] getOrganizationSubscription - No user found");
+    return null;
+  }
 
-  // Get user's organization membership
-  const { data: membership } = await supabase
+  console.log(
+    "[v0] getOrganizationSubscription - Fetching org membership for user:",
+    user.id
+  );
+
+  const { data: membership, error: membershipError } = await supabase
     .from("organization_members")
     .select("organization_id")
-    .eq("user_id", user.id)
-    .single();
+    .eq("therapist_id", user.id)
+    .maybeSingle();
 
-  if (!membership) return null;
+  console.log(
+    "[v0] getOrganizationSubscription - Membership result:",
+    membership,
+    "Error:",
+    membershipError
+  );
+
+  if (!membership) {
+    console.log("[v0] getOrganizationSubscription - No membership found");
+    return null;
+  }
+
+  console.log(
+    "[v0] getOrganizationSubscription - Fetching organization:",
+    membership.organization_id
+  );
 
   // Get organization with subscription details
-  const { data: org } = await supabase
+  const { data: org, error: orgError } = await supabase
     .from("organizations")
     .select("*")
     .eq("id", membership.organization_id)
-    .single();
+    .maybeSingle();
+
+  console.log(
+    "[v0] getOrganizationSubscription - Organization result:",
+    org,
+    "Error:",
+    orgError
+  );
 
   return org as Organization;
 }

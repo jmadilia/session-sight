@@ -5,30 +5,71 @@ import { PlanComparison } from "@/components/plan-comparison";
 import { useSubscriptionAccess } from "@/hooks/use-subscription";
 import { PLANS } from "@/utils/plans";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
-interface BillingFormProps {
-  billing: any;
-  userId: string;
-}
-
-export function BillingForm({ billing, userId }: BillingFormProps) {
-  const { organization, plan, subscriptionStatus, loading, planConfig } =
+export function BillingForm() {
+  const { organization, plan, planConfig, subscriptionStatus, loading, role } =
     useSubscriptionAccess();
 
-  console.log("[v0] Billing Form Data:", {
-    organization,
-    plan,
-    subscriptionStatus,
-    loading,
-    planConfig,
-  });
+  const canManageBilling = role === "owner" || role === "admin";
 
   if (loading) {
     return (
-      <div className="text-sm text-muted-foreground">
-        Loading billing information...
-      </div>
+      <Card>
+        <CardContent className="py-8">
+          <div className="text-center text-muted-foreground">
+            Loading billing information...
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!canManageBilling && organization) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Billing & Subscription</CardTitle>
+          <CardDescription>
+            View your organization's subscription plan
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert>
+            <AlertTitle>View Only Access</AlertTitle>
+            <AlertDescription>
+              Only organization owners and admins can manage billing and
+              subscription settings. Contact your organization administrator to
+              make changes.
+            </AlertDescription>
+          </Alert>
+
+          <div className="pt-4 space-y-4">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Current Plan
+              </p>
+              <p className="text-2xl font-bold capitalize">{planConfig.name}</p>
+            </div>
+
+            {organization && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Status
+                </p>
+                <p className="text-lg capitalize">{subscriptionStatus}</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 

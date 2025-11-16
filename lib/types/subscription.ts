@@ -82,6 +82,7 @@ export interface SubscriptionAccess {
   planConfig: any;
   subscriptionStatus: SubscriptionStatus | null;
   isActive: boolean;
+  role: string | null; // Added role for permission checks
 }
 
 export interface UsageLimits {

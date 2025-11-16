@@ -23,6 +23,7 @@ import type {
 export function useSubscriptionAccess(): SubscriptionAccess {
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadSubscription() {
@@ -36,10 +37,9 @@ export function useSubscriptionAccess(): SubscriptionAccess {
         return;
       }
 
-      // Get user's organization membership
       const { data: membership } = await supabase
         .from("organization_members")
-        .select("organization_id")
+        .select("organization_id, role")
         .eq("therapist_id", user.id)
         .maybeSingle();
 
@@ -48,7 +48,8 @@ export function useSubscriptionAccess(): SubscriptionAccess {
         return;
       }
 
-      // Get organization with subscription details
+      setRole(membership.role);
+
       const { data: org } = await supabase
         .from("organizations")
         .select("*")
@@ -58,7 +59,6 @@ export function useSubscriptionAccess(): SubscriptionAccess {
       setOrganization(org as Organization);
       setLoading(false);
 
-      // Subscribe to changes
       const channel = supabase
         .channel("subscription-changes")
         .on(
@@ -106,6 +106,7 @@ export function useSubscriptionAccess(): SubscriptionAccess {
     isActive:
       organization?.subscription_status === "active" ||
       organization?.subscription_status === "trial",
+    role,
   };
 }
 
@@ -143,7 +144,6 @@ export function useUsageLimits(): UsageLimits {
       setUsage(data);
       setLoading(false);
 
-      // Subscribe to changes (client assignments, sessions, members)
       const channel = supabase
         .channel("usage-changes")
         .on(
@@ -155,7 +155,6 @@ export function useUsageLimits(): UsageLimits {
             filter: `organization_id=eq.${organization.id}`,
           },
           () => {
-            // Refetch usage
             loadUsage();
           }
         )
@@ -210,7 +209,7 @@ export function useUsageLimits(): UsageLimits {
     },
     usage,
     limits,
-    isLoading: loading, // Renamed from 'loading'
+    isLoading: loading,
     isAtLimit: (type: "clients" | "sessions") =>
       !isWithinLimit(plan, type, usage[type]),
     getPercentage: (type: "clients" | "sessions") =>

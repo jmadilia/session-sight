@@ -1,6 +1,17 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { InviteMemberForm } from "@/components/invite-member-form";
+import { checkFeatureAccess } from "@/utils/subscription-access";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Lock } from "lucide-react";
 
 export default async function InviteMemberPage() {
   const supabase = await createClient();
@@ -48,7 +59,75 @@ export default async function InviteMemberPage() {
     redirect("/dashboard/organization");
   }
 
-  // Fetch organization details
+  const featureAccess = await checkFeatureAccess("multi_user");
+
+  if (!featureAccess.hasAccess) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Invite Team Member
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Add team members to your organization
+          </p>
+        </div>
+
+        <Card className="max-w-2xl">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
+                <Lock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <CardTitle>Upgrade to Practice Plan</CardTitle>
+                <CardDescription>
+                  Multi-user access requires the Practice plan
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Your current plan doesn't include multi-user access. Upgrade to
+              the Practice plan to:
+            </p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-teal-600 dark:text-teal-400">✓</span>
+                Add unlimited team members
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-teal-600 dark:text-teal-400">✓</span>
+                Assign different roles and permissions
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-teal-600 dark:text-teal-400">✓</span>
+                Share clients across your organization
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-teal-600 dark:text-teal-400">✓</span>
+                View practice-wide analytics
+              </li>
+            </ul>
+            <div className="flex gap-4 pt-4">
+              <Button
+                asChild
+                className="bg-gradient-to-r from-teal-500 to-blue-600">
+                <Link href="/dashboard/settings?tab=billing">
+                  Upgrade to Practice
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/dashboard/organization">Back to Organization</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   console.log(
     "[v0] INVITE PAGE - Fetching organization details for:",
     context.organization_id

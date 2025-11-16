@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Settings, UserPlus, Building2 } from "lucide-react";
 import Link from "next/link";
 import { InvitationCard } from "@/components/invitation-card";
+import { LockedFeatureButton } from "@/components/locked-feature-button";
 
 type MemberProfile = {
   id: string;
@@ -292,17 +293,13 @@ export default async function OrganizationPage() {
                   : "View your organization's team members and their roles"}
               </CardDescription>
             </div>
-            {isAdmin ? (
-              <Button asChild>
-                <Link href="/dashboard/organization/members/invite">
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Invite Member
-                </Link>
-              </Button>
-            ) : (
-              <div className="text-sm text-muted-foreground italic">
-                Only admins can invite members
-              </div>
+            {isAdmin && (
+              <LockedFeatureButton
+                feature="multi_user"
+                href="/dashboard/organization/members/invite">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Invite Member
+              </LockedFeatureButton>
             )}
           </div>
         </CardHeader>

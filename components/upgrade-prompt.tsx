@@ -15,7 +15,7 @@ import {
   FEATURE_INFO,
   type FeatureKey,
 } from "@/utils/plans";
-import { AlertCircle, Zap } from "lucide-react";
+import { AlertCircle, Zap, Lock } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -24,6 +24,8 @@ interface UpgradePromptProps {
   currentPlan: PlanType;
   suggestedPlan?: PlanType;
   variant?: "inline" | "modal" | "banner";
+  featureName?: string;
+  featureDescription?: string;
 }
 
 export function UpgradePrompt({
@@ -31,20 +33,27 @@ export function UpgradePrompt({
   currentPlan,
   suggestedPlan = "pro",
   variant = "inline",
+  featureName,
+  featureDescription,
 }: UpgradePromptProps) {
   const [showModal, setShowModal] = useState(variant === "modal");
   const suggestedPlanConfig = PLANS[suggestedPlan];
   const currentPlanConfig = PLANS[currentPlan];
 
+  // Get feature info
+  const featureKey = feature as FeatureKey;
+  const featureInfo = FEATURE_INFO[featureKey] || {
+    name: featureName || "This feature",
+    description: featureDescription || "",
+  };
+
   if (variant === "banner") {
     return (
       <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
         <Zap className="h-4 w-4 text-amber-600" />
-        <AlertTitle>Upgrade to unlock this feature</AlertTitle>
+        <AlertTitle>Upgrade to unlock {featureInfo.name}</AlertTitle>
         <AlertDescription className="flex items-center justify-between">
-          <span>
-            This feature requires the {suggestedPlanConfig.name} plan.
-          </span>
+          <span>{featureInfo.description}</span>
           <Button size="sm" asChild>
             <Link href="/dashboard/settings?tab=billing">Upgrade Now</Link>
           </Button>
@@ -59,12 +68,10 @@ export function UpgradePrompt({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-amber-600" />
-              Upgrade Required
+              <Lock className="h-5 w-5 text-amber-600" />
+              {featureInfo.name} - Upgrade Required
             </DialogTitle>
-            <DialogDescription>
-              This feature is available in the {suggestedPlanConfig.name} plan
-            </DialogDescription>
+            <DialogDescription>{featureInfo.description}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="rounded-lg border p-4">
@@ -100,21 +107,31 @@ export function UpgradePrompt({
     );
   }
 
-  // Inline variant
+  // Inline variant - more compact and contextual
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 p-6 text-center">
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-        <AlertCircle className="h-6 w-6 text-amber-600" />
+    <div className="rounded-lg border-2 border-dashed border-amber-200 bg-amber-50/50 dark:bg-amber-950/10 p-4">
+      <div className="flex items-start gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+          <Lock className="h-4 w-4 text-amber-600" />
+        </div>
+        <div className="flex-1 space-y-2">
+          <div>
+            <h4 className="font-medium text-sm">{featureInfo.name}</h4>
+            <p className="text-xs text-muted-foreground">
+              {featureInfo.description}
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Available on the{" "}
+            <span className="font-medium">{suggestedPlanConfig.name}</span> plan
+          </p>
+          <Button size="sm" variant="default" asChild>
+            <Link href="/dashboard/settings?tab=billing">
+              Upgrade to Unlock
+            </Link>
+          </Button>
+        </div>
       </div>
-      <h3 className="text-lg font-semibold mb-2">
-        Upgrade to {suggestedPlanConfig.name}
-      </h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        This feature is available in the {suggestedPlanConfig.name} plan
-      </p>
-      <Button asChild>
-        <Link href="/dashboard/settings?tab=billing">View Plans</Link>
-      </Button>
     </div>
   );
 }
