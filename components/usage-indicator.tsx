@@ -48,31 +48,40 @@ export function UsageIndicator({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="flex items-center justify-between text-sm">
-        <span className="font-medium capitalize">{type}</span>
-        <span className={cn(atLimit && "text-destructive font-medium")}>
-          {current} / {isUnlimited ? "Unlimited" : limit}
-        </span>
-      </div>
-      {!isUnlimited && (
-        <Progress
-          value={percentage}
-          className={cn(
-            "h-2",
-            percentage >= 90 && "bg-red-100 dark:bg-red-950"
+      {isUnlimited ? (
+        <div className="flex items-center justify-between">
+          <span className="font-medium capitalize text-sm">{type}</span>
+          <Badge variant="secondary" className="font-normal">
+            Unlimited
+          </Badge>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium capitalize">{type}</span>
+            <span className={cn(atLimit && "text-destructive font-medium")}>
+              {current} / {limit}
+            </span>
+          </div>
+          <Progress
+            value={percentage}
+            className={cn(
+              "h-2",
+              percentage >= 90 && "bg-red-100 dark:bg-red-950"
+            )}
+            indicatorClassName={cn(
+              percentage >= 90 && "bg-destructive",
+              percentage >= 75 && percentage < 90 && "bg-amber-500",
+              percentage < 75 && "bg-primary"
+            )}
+          />
+          {atLimit && (
+            <p className="text-xs text-destructive flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              You've reached your limit
+            </p>
           )}
-          indicatorClassName={cn(
-            percentage >= 90 && "bg-destructive",
-            percentage >= 75 && percentage < 90 && "bg-amber-500",
-            percentage < 75 && "bg-primary"
-          )}
-        />
-      )}
-      {atLimit && (
-        <p className="text-xs text-destructive flex items-center gap-1">
-          <AlertCircle className="h-3 w-3" />
-          You've reached your limit
-        </p>
+        </>
       )}
     </div>
   );

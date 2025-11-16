@@ -40,7 +40,7 @@ export function useSubscriptionAccess(): SubscriptionAccess {
       const { data: membership } = await supabase
         .from("organization_members")
         .select("organization_id")
-        .eq("user_id", user.id)
+        .eq("therapist_id", user.id)
         .single();
 
       if (!membership) {
@@ -131,7 +131,7 @@ export function useUsageLimits(): UsageLimits {
       const supabase = createClient();
 
       const { data, error } = await supabase.rpc("get_organization_usage", {
-        org_id: organization.id,
+        p_organization_id: organization.id,
       });
 
       if (error) {

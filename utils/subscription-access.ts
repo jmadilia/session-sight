@@ -5,7 +5,7 @@ import type {
   PlanUsage,
   FeatureAccessResult,
   UsageLimitResult,
-} from "@/lib//types/subscription";
+} from "@/lib/types/subscription";
 
 /**
  * Get organization and subscription data for the current user
@@ -46,7 +46,7 @@ export async function getOrganizationUsage(
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("get_organization_usage", {
-    org_id: organizationId,
+    p_organization_id: organizationId,
   });
 
   if (error) {
