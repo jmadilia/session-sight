@@ -41,7 +41,7 @@ export function useSubscriptionAccess(): SubscriptionAccess {
         .from("organization_members")
         .select("organization_id")
         .eq("therapist_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (!membership) {
         setLoading(false);
@@ -53,7 +53,7 @@ export function useSubscriptionAccess(): SubscriptionAccess {
         .from("organizations")
         .select("*")
         .eq("id", membership.organization_id)
-        .single();
+        .maybeSingle();
 
       setOrganization(org as Organization);
       setLoading(false);
@@ -196,9 +196,21 @@ export function useUsageLimits(): UsageLimits {
   const limits = PLANS[plan].limits;
 
   return {
+    clients: {
+      current: usage.clients,
+      limit: limits.clients,
+      isUnlimited: limits.clients === Infinity,
+      plan,
+    },
+    sessions: {
+      current: usage.sessions,
+      limit: limits.sessions,
+      isUnlimited: limits.sessions === Infinity,
+      plan,
+    },
     usage,
     limits,
-    loading,
+    isLoading: loading, // Renamed from 'loading'
     isAtLimit: (type: "clients" | "sessions") =>
       !isWithinLimit(plan, type, usage[type]),
     getPercentage: (type: "clients" | "sessions") =>

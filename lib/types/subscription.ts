@@ -62,15 +62,16 @@ export interface FeatureAccessResult {
 }
 
 export interface UsageLimitResult {
-  withinLimit: boolean; // Changed from 'allowed' to 'withinLimit'
+  withinLimit: boolean;
   reason?: string;
-  current?: number; // Changed from required to optional
-  currentUsage?: number; // Added currentUsage
-  limit?: number; // Changed from required to optional
+  current?: number;
+  currentUsage?: number;
+  limit?: number;
   percentage?: number;
   requiresUpgrade?: boolean;
   currentPlan?: PlanType;
   suggestedPlan?: PlanType;
+  organizationId?: string; // Added organizationId for usage tracking after creation
 }
 
 export interface SubscriptionAccess {
@@ -84,6 +85,18 @@ export interface SubscriptionAccess {
 }
 
 export interface UsageLimits {
+  clients: {
+    current: number;
+    limit: number;
+    isUnlimited: boolean;
+    plan: PlanType;
+  };
+  sessions: {
+    current: number;
+    limit: number;
+    isUnlimited: boolean;
+    plan: PlanType;
+  };
   usage: PlanUsage;
   limits: {
     clients: number;
@@ -91,7 +104,7 @@ export interface UsageLimits {
     teamMembers: number;
     storage: number;
   };
-  loading: boolean;
+  isLoading: boolean; // Renamed from 'loading' to match form usage
   isAtLimit: (type: "clients" | "sessions") => boolean;
   getPercentage: (type: "clients" | "sessions") => number;
   canAddMore: (type: "clients" | "sessions") => boolean;

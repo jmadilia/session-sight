@@ -113,19 +113,19 @@ export async function checkFeatureAccess(
  */
 export async function checkUsageLimit(
   limitType: "clients" | "sessions",
-  organizationId: string
-): Promise<UsageLimitResult> {
+  userId: string
+): Promise<UsageLimitResult & { organizationId?: string }> {
   const org = await getOrganizationSubscription();
 
   if (!org) {
     return {
       withinLimit: false,
-      reason: "No organization found",
+      reason: "no_organization",
       requiresUpgrade: true,
     };
   }
 
-  const usage = await getOrganizationUsage(organizationId);
+  const usage = await getOrganizationUsage(org.id);
   const currentUsage = usage[limitType];
   const limit = PLANS[org.plan].limits[limitType];
 
@@ -134,12 +134,13 @@ export async function checkUsageLimit(
   if (!within) {
     return {
       withinLimit: false,
-      reason: `You have reached the ${limitType} limit for the ${org.plan} plan`,
+      reason: "plan_limit",
       currentUsage,
       limit,
       currentPlan: org.plan,
       requiresUpgrade: true,
       suggestedPlan: "pro",
+      organizationId: org.id,
     };
   }
 
@@ -148,6 +149,7 @@ export async function checkUsageLimit(
     currentUsage,
     limit,
     currentPlan: org.plan,
+    organizationId: org.id,
   };
 }
 
@@ -181,9 +183,9 @@ export function withFeatureAccess(feature: FeatureKey) {
 export function withUsageLimit(limitType: "clients" | "sessions") {
   return async (
     handler: () => Promise<Response>,
-    organizationId: string
+    userId: string
   ): Promise<Response> => {
-    const limitCheck = await checkUsageLimit(limitType, organizationId);
+    const limitCheck = await checkUsageLimit(limitType, userId);
 
     if (!limitCheck.withinLimit) {
       return Response.json(
@@ -194,6 +196,7 @@ export function withUsageLimit(limitType: "clients" | "sessions") {
           limit: limitCheck.limit,
           currentPlan: limitCheck.currentPlan,
           suggestedPlan: limitCheck.suggestedPlan,
+          organizationId: limitCheck.organizationId,
         },
         { status: 403 }
       );

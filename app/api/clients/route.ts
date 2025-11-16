@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { getAccessibleTherapistIds } from "@/utils/permissions";
+import { checkUsageLimit } from "@/utils/subscription-access";
 
 export async function GET() {
   const supabase = await createClient();
@@ -51,6 +52,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const limitCheck = await checkUsageLimit("clients", user.id);
+
+  if (!limitCheck.withinLimit) {
+    return NextResponse.json(
+      {
+        error: "Client limit reached",
+        reason: limitCheck.reason,
+        currentUsage: limitCheck.currentUsage,
+        limit: limitCheck.limit,
+        currentPlan: limitCheck.currentPlan,
+        upgradeRequired: true,
+      },
+      { status: 403 }
+    );
+  }
+
   const body = await request.json();
 
   // Insert new client
@@ -65,6 +82,17 @@ export async function POST(request: Request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const { error: incrementError } = await supabase.rpc(
+    "increment_client_count",
+    {
+      p_organization_id: limitCheck.organizationId,
+    }
+  );
+
+  if (incrementError) {
+    console.error("[v0] Error incrementing client count:", incrementError);
   }
 
   return NextResponse.json({ client }, { status: 201 });

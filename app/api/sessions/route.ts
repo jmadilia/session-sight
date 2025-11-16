@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { getAccessibleTherapistIds } from "@/utils/permissions";
+import { checkUsageLimit } from "@/utils/subscription-access";
 
 export async function GET() {
   const supabase = await createClient();
@@ -52,6 +53,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const limitCheck = await checkUsageLimit("sessions", user.id);
+
+  if (!limitCheck.withinLimit) {
+    return NextResponse.json(
+      {
+        error: "Session limit reached",
+        reason: limitCheck.reason,
+        currentUsage: limitCheck.currentUsage,
+        limit: limitCheck.limit,
+        currentPlan: limitCheck.currentPlan,
+        upgradeRequired: true,
+      },
+      { status: 403 }
+    );
+  }
+
   const body = await request.json();
 
   // Insert new session
@@ -81,6 +98,17 @@ export async function POST(request: Request) {
     if (notesError) {
       console.error("Error creating session notes:", notesError);
     }
+  }
+
+  const { error: incrementError } = await supabase.rpc(
+    "increment_session_count",
+    {
+      p_organization_id: limitCheck.organizationId,
+    }
+  );
+
+  if (incrementError) {
+    console.error("[v0] Error incrementing session count:", incrementError);
   }
 
   return NextResponse.json({ session }, { status: 201 });

@@ -19,9 +19,10 @@ export function UsageIndicator({
   showLabel = true,
   variant = "minimal",
 }: UsageIndicatorProps) {
-  const { usage, limits, getPercentage, isAtLimit, loading } = useUsageLimits();
+  const { usage, limits, getPercentage, isAtLimit, isLoading } =
+    useUsageLimits();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div
         className={cn("animate-pulse bg-muted rounded h-6 w-24", className)}
